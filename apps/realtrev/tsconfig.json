@@ -1,0 +1,26 @@
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",  // Set the base URL for resolving non-relative module names
+    "paths": {
+      "@/*": ["./*"],                     // Allows you to import using '@/...' syntax
+      "@/components/*": ["./components/*"], // For components
+      "@/lib/*": ["./lib/*"],               // For libraries
+      "@/utils/*": ["./utils/*"],           // For utility functions
+      "@/hooks/*": ["./hooks/*"]            // For custom hooks
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "next.config.mjs",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}
