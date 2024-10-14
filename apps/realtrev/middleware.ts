@@ -6,5 +6,5 @@ export default withAuth({
     signIn: 'api/auth/signin',
   },
 });
-
+   
 export const config = { matcher: ['/explore'] };
