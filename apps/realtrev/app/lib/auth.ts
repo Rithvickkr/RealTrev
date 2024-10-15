@@ -7,11 +7,7 @@ import { NextAuthOptions} from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "",
-      clientSecret: process.env.GOOGLE_SECRET || "",
-    }
-    ) ,
+   
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -23,13 +19,14 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) {
           throw new Error("Missing email or password");
         }
-        const hashedPassword = await bcrypt.hash(credentials.password, 10);
+        
         const existingUser = await db.user.findFirst({
           where: { email: credentials.email },
         });
 
         if (existingUser) {
           const passwordValidation = await bcrypt.compare(credentials.password, existingUser.password);
+          console.log(passwordValidation);
           if (passwordValidation) {
             return {
               id: existingUser.id.toString(),
@@ -60,7 +57,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  secret: process.env.JWT_SECRET || "secret",
+  secret: process.env.NEXTAUTH_SECRET || "secret",
   callbacks: {
     async session({ token, session }: { token: any, session: any }) {
       if (token) {
@@ -92,5 +89,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/signin',
+    newUser: '/explore', 
   },
 };

@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
-import setUser from "../lib/actions/setuser";
 import { useState, useEffect } from "react";
 import {useRouter} from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function SleekSignUpForm() {
 const Router = useRouter();
@@ -26,14 +26,18 @@ const Router = useRouter();
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     try {
-      await setUser(data);
-      console.log("User created");
-        Router.push("/explore"); // Redirect to login page
-    } catch (error) {
-      console.error("Error creating user:", error);
-      alert(error); // User-friendly error message
+       await signIn("credentials", {
+        name: `${data.name}`,
+        password: data.password,
+        email: data.email,
+        redirect: false,
+      });
+
+      Router.push("/explore");
+    } catch (err) {
+      console.error(err);
     }
   };
 

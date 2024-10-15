@@ -7,7 +7,7 @@ export default function Explore() {
     return (
         <div className="text-6xl text-center">
         <h1>Explore</h1>
-        <h2>Session: {JSON.stringify(session?.user?.name)}</h2>
+        <h2>Session: {JSON.stringify(session.data?.user?.name)}</h2>
         <button onClick={() => signOut()}>Sign out</button>
         <br></br>
         <button onClick={() => signIn()}>Sign In</button>
