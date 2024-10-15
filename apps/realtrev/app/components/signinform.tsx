@@ -136,7 +136,7 @@ const Router = useRouter();
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Label htmlFor="password" className="sr-only">
+                <Label htmlFor="password"  className="sr-only">
                   Password
                 </Label>
                 <Input
