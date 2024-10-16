@@ -21,5 +21,6 @@ model Message {
   id        String      @id @default(uuid())
   content   String
   senderId  Int
+  location  String
   createdAt DateTime @default(now())
 }
