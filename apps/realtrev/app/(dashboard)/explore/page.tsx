@@ -136,20 +136,23 @@ export default function ExplorePage() {
           <div className="absolute inset-0 bg-black opacity-50"></div>
         </div>
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
-          <motion.img
+         
+          {/* <motion.img
             src="/placeholder.svg?height=100&width=300"
             alt="RealTrev Logo"
             className="mx-auto mb-8 w-48 sm:w-64 md:w-80"
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
-          />
+          /> */}
           <motion.h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
+            REALTREV
+            <br></br>
             Connect with Locals for Real-Time Adventures!
           </motion.h1>
           <motion.div

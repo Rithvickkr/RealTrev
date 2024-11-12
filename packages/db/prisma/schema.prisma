@@ -12,9 +12,11 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      String   @default("traveler") // "traveler" or "local"
+  role      Role     @default(TRAVELLER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Query Query[]
 }
 
 model Message {
@@ -23,4 +25,36 @@ model Message {
   senderId  Int
   location  String
   createdAt DateTime @default(now())
+}
+model Location {
+  id        Int    @id @default(autoincrement())
+  name      String
+  latitude  Float
+  longitude Float
+  queries   Query[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Query {
+  id          String      @id @default(uuid())
+  travelerId  String
+  locationId  Int
+  queryText   String
+  status      QueryStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  traveler User    @relation(fields: [travelerId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+}
+
+enum QueryStatus {
+  PENDING
+  RESPONDED
+  CLOSED
+}
+ enum Role {
+  TRAVELLER
+  LOCAL 
 }

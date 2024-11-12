@@ -7,4 +7,4 @@ export default withAuth({
   },
 });
    
-export const config = { matcher: ['/explore','/chatpage'] };
+export const config = { matcher: ['/explore','/chatpage','/gdash','/querygen'] };

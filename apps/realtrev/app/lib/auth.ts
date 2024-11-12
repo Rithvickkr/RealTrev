@@ -43,12 +43,14 @@ export const authOptions: NextAuthOptions = {
               email: credentials.email,
               password: hashedPassword,
               name: credentials.name || "Unknown",
+              role: "TRAVELLER",
             },
           });
           return {
             id: user.id.toString(),
             name: user.name,
             email: user.email,
+            role: user.role,
           };
         } catch (e) {
           console.error("Error creating user:", e);
@@ -64,6 +66,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
         session.user.role = token.role;
         session.user.userImage = token.userImage;
+        session.user.role = token.role;
       }
       return session;
     },
