@@ -1,6 +1,6 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
-  "compilerOptions": {
+    "compilerOptions": {
     "baseUrl": ".",  // Set the base URL for resolving non-relative module names
     "paths": {
       "@/*": ["./*"],                     // Allows you to import using '@/...' syntax
