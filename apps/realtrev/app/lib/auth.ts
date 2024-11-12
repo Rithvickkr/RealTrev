@@ -1,31 +1,37 @@
 import db from "@repo/db/client";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
-import { NextAuthOptions} from "next-auth";
 
+import bcrypt from "bcryptjs";
+import { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-   
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: "Email", type:"email", placeholder: "hello@hello.com", required: true },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "hello@hello.com",
+          required: true,
+        },
         password: { label: "Password", type: "password", required: true },
-        name: { label: "Name", type: "text" }
+        name: { label: "Name", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
           throw new Error("Missing email or password");
         }
-        
+
         const existingUser = await db.user.findFirst({
           where: { email: credentials.email },
         });
 
         if (existingUser) {
-          const passwordValidation = await bcrypt.compare(credentials.password, existingUser.password);
+          const passwordValidation = await bcrypt.compare(
+            credentials.password,
+            existingUser.password
+          );
           console.log(passwordValidation);
           if (passwordValidation) {
             return {
@@ -33,7 +39,8 @@ export const authOptions: NextAuthOptions = {
               name: existingUser.name,
               email: existingUser.email,
             };
-          } return null;
+          }
+          return null;
         }
 
         try {
@@ -61,7 +68,7 @@ export const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET || "secret",
   callbacks: {
-    async session({ token, session }: { token: any, session: any }) {
+    async session({ token, session }: { token: any; session: any }) {
       if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
@@ -71,27 +78,26 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token }) {
-      const dbUser= await db.user.findFirst({
-        where : {
-          email : token.email || "",
+      const dbUser = await db.user.findFirst({
+        where: {
+          email: token.email || "",
         },
-      })
+      });
 
-      if(!dbUser){
-        return token
+      if (!dbUser) {
+        return token;
       }
 
       return {
-        id : dbUser.id ,
-        name : dbUser.name,
-        email : dbUser.email,
-        role : dbUser.role
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role,
       };
-    }
-
+    },
   },
   pages: {
-    signIn: '/signin',
-    newUser: '/explore', 
+    signIn: "/signin",
+    newUser: "/explore",
   },
 };
