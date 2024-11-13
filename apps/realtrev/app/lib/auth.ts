@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
           console.log(passwordValidation);
           if (passwordValidation) {
             return {
-              id: existingUser.id.toString(),
+              id: existingUser.id,
               name: existingUser.name,
               email: existingUser.email,
             };
@@ -71,7 +71,8 @@ export const authOptions: NextAuthOptions = {
     async session({ token, session }: { token: any; session: any }) {
       if (token) {
         session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.name = token.name;
+        session.user.email = token.email;
         session.user.userImage = token.userImage;
         session.user.role = token.role;
       }

@@ -8,7 +8,7 @@ generator client {
 }
 
 model User {
-  id        String     @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
   email     String   @unique
   password  String
@@ -20,14 +20,15 @@ model User {
 }
 
 model Message {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   content   String
   senderId  Int
   location  String
   createdAt DateTime @default(now())
 }
+
 model Location {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   latitude  Float
   longitude Float
@@ -37,15 +38,15 @@ model Location {
 }
 
 model Query {
-  id          String      @id @default(uuid())
-  travelerId  String
-  locationId  Int
-  queryText   String
-  status      QueryStatus @default(PENDING)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String      @id @default(uuid())
+  travelerId String
+  locationId Int
+  queryText  String
+  status     QueryStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
-  traveler User    @relation(fields: [travelerId], references: [id])
+  traveler User     @relation(fields: [travelerId], references: [id])
   location Location @relation(fields: [locationId], references: [id])
 }
 
@@ -54,7 +55,8 @@ enum QueryStatus {
   RESPONDED
   CLOSED
 }
- enum Role {
+
+enum Role {
   TRAVELLER
-  LOCAL 
+  LOCAL
 }

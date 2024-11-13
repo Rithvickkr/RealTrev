@@ -9,8 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
+import axios from "axios";
+import submitQuery from "../lib/actions/querysubmit";
+import { useSession } from "next-auth/react";
 
-export default function EnhancedTravelerQuerySubmission(Session: any) {
+export default function EnhancedTravelerQuerySubmission() {
   const [location, setLocation] = useState("");
   const [query, setQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,8 +21,11 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionBoxRef = useRef<HTMLDivElement>(null);
-
-  const handleLocationChange = async (e: { target: { value: any; }; }) => {
+  const baseUrl = "https://api.opencagedata.com/geocode/v1/json";
+  const Apikey = "37da08ae92ea44f386b963337c7b28b0";
+  const Session = useSession();
+  console.log(Session)
+  const handleLocationChange = async (e: { target: { value: any } }) => {
     const newLocation = e.target.value;
     setLocation(newLocation);
 
@@ -60,14 +66,50 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  async function getLocationCoordinates(
+    locationName: string
+  ): Promise<{ latitude: number; longitude: number }> {
+    try {
+      // Make a GET request to the OpenCage API
+      const response = await axios.get(baseUrl, {
+        params: {
+          q: locationName, // The location name
+          key: Apikey, // API key
+          no_annotations: 1, // Exclude additional info
+          language: "en", // Language for the results
+        },
+      });
+
+      const results = response.data.results;
+      console.log(baseUrl);
+      console.log(Apikey);
+      console.log(results);
+
+      // Check if results exist
+      if (results && results.length > 0) {
+        const { lat, lng } = results[0].geometry; // Extract latitude and longitude from the first result
+        return { latitude: lat, longitude: lng }; // Return coordinates
+      } else {
+        throw new Error("Location not found");
+      }
+    } catch (error) {
+      console.error("Error fetching location coordinates:", error);
+      throw error; // Rethrow error if something goes wrong
+    }
+  }
+
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFeedback("");
+    const res = await getLocationCoordinates(location);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      await submitQuery((Session.data?.user as { id: string }).id, location, query, res.latitude, res.longitude);
       setFeedback("Query submitted successfully! A local will respond soon.");
+     
+      console.log(res.latitude, res.longitude);
     } catch (error) {
       console.error("Error submitting query:", error);
       setFeedback(
