@@ -1,27 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, SetStateAction } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Send, Loader2, Search } from "lucide-react";
+import { MapPin, Send, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {Button } from "@/components/ui/button";
-
-import { AutoComplete } from 'primereact/autocomplete';
-        
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
-
 
 export default function EnhancedTravelerQuerySubmission(Session: any) {
   const [location, setLocation] = useState("");
@@ -29,48 +16,57 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const handlocationchange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value);
-    console.log(location);
-  
-        if (location) {
-            // Call Photon API for location suggestions
-            const response = await fetch(
-              `https://photon.komoot.io/api/?q=${location}&limit=5`
-            );
-            const data = await response.json();
-            console.log(data);
-      
-            // Set suggestions from the API response
-            setSuggestions(
-              data.features.map((feature: { properties: { name: any; city: any; state: any } }) => {
-                return `${feature.properties.name}, ${feature.properties.state}`;
-              })
-            );
-            console.log(suggestions);
-          }
-          else
-            {
-                setSuggestions([]);
-            }
-        
-  
-    
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionBoxRef = useRef<HTMLDivElement>(null);
+
+  const handleLocationChange = async (e: { target: { value: any; }; }) => {
+    const newLocation = e.target.value;
+    setLocation(newLocation);
+
+    if (newLocation) {
+      const response = await fetch(
+        `https://photon.komoot.io/api/?q=${newLocation}&limit=5`
+      );
+      const data = await response.json();
+      setSuggestions(
+        data.features.map(
+          (feature: { properties: { name: any; state: any } }) =>
+            `${feature.properties.name}, ${feature.properties.state}`
+        )
+      );
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
   };
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSuggestionClick = (suggestion: SetStateAction<string>) => {
+    setLocation(suggestion);
+    setShowSuggestions(false);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      suggestionBoxRef.current &&
+      !suggestionBoxRef.current.contains(event.target as Node)
+    ) {
+      setShowSuggestions(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFeedback("");
 
     try {
-      // Simulating API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log(location);
-        console.log(query);
-        console.log(suggestions);
-      
-
-      // Simulating success (you'd replace this with actual API call)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setFeedback("Query submitted successfully! A local will respond soon.");
     } catch (error) {
       console.error("Error submitting query:", error);
@@ -81,8 +77,6 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
       setIsSubmitting(false);
     }
   };
-
-  const isFormValid = location && query;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FEF3C7] p-4">
@@ -112,6 +106,7 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
             </motion.p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Suggestion Section */}
               <div className="space-y-2">
                 <label
                   htmlFor="location-search"
@@ -120,35 +115,36 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
                   Search for a location
                 </label>
                 <div className="relative">
-                  {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
                     id="location-search"
                     placeholder="Enter a location..."
                     value={location}
-                    onValueChange={setLocation}
-                    className="pl-10"
-                    required
-                  /> */}
-                  
-                   <Input id="location-search" placeholder="Enter a location..." value={location} onChange={handlocationchange} />
-                   
-                    
-                      {suggestions.length !== 0 ? (
-                        <ScrollArea>
-                            <Label>Locations</Label>
-                            <li>
-                          {suggestions.map((suggestion) => (
-                            <ul    key={suggestion}>{suggestion} </ul>
-                          ))}</li>
-                        </ScrollArea>
-                      ) : (
-                        <h3>No suggestions</h3>
-                      )}
+                    onChange={handleLocationChange}
+                    onFocus={() => location && setShowSuggestions(true)}
+                  />
+                  <Label>Locations</Label>
 
-                      
-                    
-                   
-                 
+                  {showSuggestions && (
+                    <ScrollArea ref={suggestionBoxRef}>
+                      <div className="border border-gray-200 rounded shadow-sm text-sm">
+                        {suggestions.length > 0 ? (
+                          suggestions.map((suggestion) => (
+                            <div
+                              className="p-2 hover:bg-gray-100 cursor-pointer"
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              key={suggestion}
+                            >
+                              {suggestion}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-2 text-gray-500">
+                            No suggestions found
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  )}
                 </div>
               </div>
 
@@ -161,7 +157,7 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
                 </label>
                 <Textarea
                   id="query"
-                  placeholder="Type your question here… e.g., What's the best local restaurant in the area?"
+                  placeholder="Type your question here…"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="min-h-[100px]"
@@ -172,7 +168,7 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
               <Button
                 type="submit"
                 className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white transition-all duration-200 ease-in-out transform hover:scale-105"
-                disabled={!isFormValid || isSubmitting}
+                disabled={!location || !query || isSubmitting}
               >
                 {isSubmitting ? (
                   <>
@@ -200,26 +196,6 @@ export default function EnhancedTravelerQuerySubmission(Session: any) {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Background Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, -5, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-          className="absolute inset-0 opacity-10"
-        >
-          <MapPin className="absolute top-1/4 left-1/4 text-[#1E40AF] w-24 h-24" />
-          <MapPin className="absolute top-3/4 right-1/4 text-[#F97316] w-16 h-16" />
-          <MapPin className="absolute bottom-1/4 left-1/3 text-[#0D9488] w-20 h-20" />
-        </motion.div>
-      </div>
     </div>
   );
 }

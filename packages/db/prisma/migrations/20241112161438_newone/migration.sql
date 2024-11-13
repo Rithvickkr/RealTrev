@@ -5,4 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "Message" ADD COLUMN     "location" TEXT NOT NULL;
+
