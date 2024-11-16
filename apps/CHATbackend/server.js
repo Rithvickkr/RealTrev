@@ -39,11 +39,23 @@ io.on("connection", (socket) => {
   });
 
   // Handle messages in a room
-  socket.on("sendMessage", ({ id, senderId, message }) => {
-    if (!id || !message) return console.error("Invalid message payload!");
+  socket.on("sendMessage", ({ queryid, senderId, message }) => {
+    console.error(`Message received in room ${queryid}: ${message} by ${senderId}`);
+    // Validate incoming payload
+    if (!queryid || !senderId || !message) {
+      console.error("Invalid message payload! Missing required fields.");
+      return;
+    }
 
-    io.to(id).emit("receiveMessage", message); // Broadcast the message to the room
-    console.log(`Message sent in room ${id}: ${message} by ${senderId}`);
+    // Ensure message is a string
+    if (typeof message !== "string") {
+      console.error("Invalid message format! Expected a string.");
+      return;
+    }
+
+    // Broadcast the message to the room
+    io.to(queryid).emit("receiveMessage", { message, senderId });  // Broadcast the message to the room
+    console.log(`Message sent in room ${queryid}: ${message} by ${senderId}`);
   });
 
   // Handle disconnection
