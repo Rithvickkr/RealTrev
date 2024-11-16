@@ -16,15 +16,18 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Query Query[]
+  answeredQueries Query[] @relation("Responder")
+  submittedQueries Query[] @relation("Traveler")
 }
 
 model Message {
   id        String   @id @default(uuid())
   content   String
-  senderId  Int
-  location  String
+  senderId  String
+  queryId   String
   createdAt DateTime @default(now())
+
+  query Query @relation(fields: [queryId], references: [id])
 }
 
 model Location {
@@ -41,13 +44,16 @@ model Query {
   id         String      @id @default(uuid())
   travelerId String
   locationId Int
+  responderId   String?
   queryText  String
   status     QueryStatus @default(PENDING)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  traveler User     @relation(fields: [travelerId], references: [id])
-  location Location @relation(fields: [locationId], references: [id])
+  responder User?       @relation("Responder", fields: [responderId], references: [id])
+  traveler User         @relation("Traveler", fields: [travelerId], references: [id])
+  location Location     @relation(fields: [locationId], references: [id])
+  messages  Message[]
 }
 
 enum QueryStatus {

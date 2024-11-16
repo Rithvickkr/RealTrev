@@ -1,4 +1,7 @@
 import LocalGuideDashboard from "@/app/components/localdashboard";
-export default function Page() {
-  return <LocalGuideDashboard />;
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/lib/auth";
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  return <LocalGuideDashboard session={session}/>;
 }

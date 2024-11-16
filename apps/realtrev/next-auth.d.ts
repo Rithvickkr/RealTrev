@@ -1,4 +1,17 @@
 import { DefaultSession } from "next-auth";
+import "next-auth/jwt";
+import "next-auth"
+
+type UserId = string;
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: UserId;
+    userImage : string ,
+    role : UserRole,
+    
+  }
+}
 
 declare module "next-auth" {
   interface Session {
@@ -8,6 +21,6 @@ declare module "next-auth" {
       email: string | null;
       image: string | null;
       role: string | null;  // If you're using roles
-    };
+    }& DefaultSession['user'];
   }
 }

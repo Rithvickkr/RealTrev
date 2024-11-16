@@ -2,19 +2,14 @@ import db from "@repo/db/client";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import bcrypt from "bcryptjs";
-import { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-          placeholder: "hello@hello.com",
-          required: true,
-        },
+        email: { label: "Email", type: "email", required: true },
         password: { label: "Password", type: "password", required: true },
         name: { label: "Name", type: "text" },
       },
@@ -32,69 +27,56 @@ export const authOptions: NextAuthOptions = {
             credentials.password,
             existingUser.password
           );
-          console.log(passwordValidation);
           if (passwordValidation) {
             return {
               id: existingUser.id,
               name: existingUser.name,
               email: existingUser.email,
+              role: existingUser.role,
             };
           }
-          return null;
+          throw new Error("Invalid credentials");
         }
 
-        try {
-          const hashedPassword = await bcrypt.hash(credentials.password, 10);
-          const user = await db.user.create({
-            data: {
-              email: credentials.email,
-              password: hashedPassword,
-              name: credentials.name || "Unknown",
-              role: "TRAVELLER",
-            },
-          });
-          return {
-            id: user.id.toString(),
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          };
-        } catch (e) {
-          console.error("Error creating user:", e);
-          throw new Error("Unable to create user");
-        }
+        // Register a new user
+        const hashedPassword = await bcrypt.hash(credentials.password, 10);
+        const newUser = await db.user.create({
+          data: {
+            email: credentials.email,
+            password: hashedPassword,
+            name: credentials.name || "Unknown",
+            role: "TRAVELLER",
+          },
+        });
+
+        return {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+        };
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET || "secret",
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async jwt({ token, user }: { token: any; user?: any }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.role = user.role;
+      }
+      return token;
+    },
     async session({ token, session }: { token: any; session: any }) {
       if (token) {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
-        session.user.userImage = token.userImage;
         session.user.role = token.role;
       }
       return session;
-    },
-    async jwt({ token }) {
-      const dbUser = await db.user.findFirst({
-        where: {
-          email: token.email || "",
-        },
-      });
-
-      if (!dbUser) {
-        return token;
-      }
-
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        role: dbUser.role,
-      };
     },
   },
   pages: {

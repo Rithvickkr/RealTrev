@@ -11,6 +11,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -22,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import getQuery from "../lib/actions/getquery";
+import setResponseQ from "../lib/actions/setresponseq";
 
 type Query = {
   id: string;
@@ -29,21 +31,24 @@ type Query = {
   question: string;
   location: string;
   queryLocation: string;
-  traveler: any
+  traveler: { name?: string } | null;
 };
 
-export default function LocalGuideDashboard() {
+export default function LocalGuideDashboard({ session }: { session: any }) {
   const [darkMode, setDarkMode] = useState(false);
   const [queries, setQueries] = useState<Query[]>([]);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
-  } | null>(null); // Store user's location
-  const [cityName, setCityName] = useState<string | null>(null); // Store city name
+  } | null>(null);
+  const [cityName, setCityName] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const baseUrl = "https://api.opencagedata.com/geocode/v1/json";
   const ApiKey = process.env.API_KEY || "";
 
+  const router = useRouter();
+
+  // Haversine formula to calculate distance
   const haversineDistance = (
     lat1: number,
     lon1: number,
@@ -61,20 +66,18 @@ export default function LocalGuideDashboard() {
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in kilometers
-    return distance;
+    return R * c;
   };
 
-  // Request location when the component loads
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ latitude, longitude });
-          fetchCityName(latitude, longitude); // Call function to get city name
+          fetchCityName(latitude, longitude);
         },
-        (error) => {
+        () => {
           setLocationError(
             "Location access denied. Please enable it in browser settings."
           );
@@ -86,53 +89,88 @@ export default function LocalGuideDashboard() {
   }, []);
 
   useEffect(() => {
-    if (userLocation?.latitude) {
-      const fetchData = async () => { // Define the async function
-        const fetchedQueries = await getQuery(
-          userLocation.latitude,
-          userLocation.longitude,
-          10
-        );
-  
-        const mappedQueries: Query[] = fetchedQueries.map((query) => ({
-          id: query.id,
-          travelerId: query.travelerId, // Assuming travelerId is the name, adjust if needed
-          question: query.queryText,
-          location: query.location.name,
-          queryLocation: `${query.location.latitude}, ${query.location.longitude}`,
-          traveler: query.traveler
-        }));
-  
-        setQueries(mappedQueries);
-        console.log(mappedQueries);
+    if (userLocation?.latitude && userLocation?.longitude) {
+      const fetchData = async () => {
+        try {
+          const fetchedQueries = await getQuery(
+            userLocation.latitude,
+            userLocation.longitude,
+            10
+          );
+
+          if (Array.isArray(fetchedQueries)) {
+            const mappedQueries: Query[] = fetchedQueries
+              .filter(
+                (query) =>
+                  query &&
+                  query.id &&
+                  query.location &&
+                  query.traveler // Ensure valid data
+              )
+              .map((query) => ({
+                id: query.id,
+                travelerId: query.travelerId || "Unknown",
+                question: query.queryText || "No question provided",
+                location: query.location.name || "Unknown Location",
+                queryLocation: `${query.location.latitude || 0}, ${
+                  query.location.longitude || 0
+                }`,
+                traveler: query.traveler,
+              }));
+
+            setQueries(mappedQueries);
+          } else {
+            console.error("Invalid data format from getQuery:", fetchedQueries);
+          }
+        } catch (error) {
+          console.error("Error fetching queries:", error);
+        }
       };
-  
-      fetchData(); // Call the async function
-    } 
+
+      fetchData();
+    }
   }, [userLocation]);
 
-  // Function to fetch city name using OpenCage API
   const fetchCityName = async (latitude: number, longitude: number) => {
     const API_KEY = "37da08ae92ea44f386b963337c7b28b0"; // Replace with your OpenCage API key
-    const response = await fetch(
-      `${baseUrl}?q=${latitude}+${longitude}&key=${API_KEY}`
-    );
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `${baseUrl}?q=${latitude}+${longitude}&key=${API_KEY}`
+      );
+      const data = await response.json();
 
-    if (data.results && data.results.length > 0) {
-      const city =
-        data.results[0].components.city ||
-        data.results[0].components.town ||
-        data.results[0].components.village;
-      setCityName(city || "Unknown Location");
-    } else {
+      if (data.results?.length > 0) {
+        const city =
+          data.results[0].components.city ||
+          data.results[0].components.town ||
+          data.results[0].components.village;
+        setCityName(city || "Unknown Location");
+      } else {
+        setCityName("Unknown Location");
+      }
+    } catch (error) {
+      console.error("Error fetching city name:", error);
       setCityName("Unknown Location");
     }
   };
-  console.log(queries);
 
-  const handleAccept = (id: string) => {
-    setQueries((prevQueries) => prevQueries.filter((query) => query.id !== id));
+  const handleAccept = async (id: string) => {
+    if (!session) {
+      return;
+    }
+
+    try {
+      const isAccepted = await setResponseQ(session, id);
+      if (isAccepted) {
+        alert("Query accepted successfully!");
+        setQueries((prevQueries) =>
+          prevQueries.filter((query) => query.id !== id)
+        );
+        router.push(`/chatpage/${id}`);
+      }
+    } catch (error) {
+      console.error("Error accepting query:", error);
+    }
   };
 
   const handleReject = (id: string) => {
@@ -156,94 +194,19 @@ export default function LocalGuideDashboard() {
             <Home className="mr-3 h-5 w-5" />
             Dashboard
           </a>
-          <a
-            href="#"
-            className="flex items-center py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <User className="mr-3 h-5 w-5" />
-            Profile
-          </a>
-          <a
-            href="#"
-            className="flex items-center py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Bell className="mr-3 h-5 w-5" />
-            My Queries
-          </a>
-          <a
-            href="#"
-            className="flex items-center py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Settings className="mr-3 h-5 w-5" />
-            Settings
-          </a>
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <header className="bg-white dark:bg-gray-900 shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Welcome, Local Guide!
             </h1>
-            <div className="flex items-center space-x-4">
-              <Switch
-                checked={darkMode}
-                onCheckedChange={setDarkMode}
-                className="data-[state=checked]:bg-gray-600"
-              />
-              {darkMode ? (
-                <Moon className="h-5 w-5 text-gray-300" />
-              ) : (
-                <Sun className="h-5 w-5 text-gray-600" />
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
-                  >
-                    <img
-                      src="/placeholder.svg?height=32&width=32"
-                      alt="User avatar"
-                      className="rounded-full"
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        Local Guide
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        guide@example.com
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
         </header>
 
-        {/* Main Body */}
         <main className="flex-1 bg-gray-100 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
@@ -253,8 +216,8 @@ export default function LocalGuideDashboard() {
               {locationError
                 ? locationError
                 : cityName
-                  ? `Your location: ${cityName}`
-                  : "Fetching your location..."}
+                ? `Your location: ${cityName}`
+                : "Fetching your location..."}
             </p>
             <div className="space-y-4">
               {queries.map((query) => (
@@ -264,16 +227,13 @@ export default function LocalGuideDashboard() {
                 >
                   <div className="px-4 py-5 sm:px-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                      {query.traveler.name}
+                      {query.traveler?.name || "Traveler"}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       {query.question}
                     </p>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Location: {query.location}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      Query Location: {query.queryLocation}
                     </p>
                   </div>
                   <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between">
