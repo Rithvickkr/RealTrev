@@ -14,8 +14,9 @@ export default async function changerole(session: { user: { email: any; }; }) {
       id: user.id
     },
     data: {
-     role: user.role === "TRAVELLER" ? "LOCAL" : "TRAVELLER"
+     role: user.role === "TRAVELLER" ? "GUIDE" : "TRAVELLER"
     }
   });
+  console.log("User role updated to", updatedUser.role);
   return updatedUser;
 }

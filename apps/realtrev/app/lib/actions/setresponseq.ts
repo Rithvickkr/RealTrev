@@ -15,7 +15,7 @@ export default async function setResponseQ(session: any,queryId: string) {
                     id: queryId,
                 },
                 data: {
-                    status: "RESPONDED",
+                    status: "ACCEPTED",
                     responderId: session.user.id,
                 },
             });

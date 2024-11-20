@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 import Link from "next/link"
 import { Menu, X, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,17 +15,26 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { signOut } from "next-auth/react"
 import { useSession } from "next-auth/react"
+
+
+
 import changerole from "../lib/actions/changerole"
 
 export default function Navbar() {
+  const { data: session } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { data: session } = useSession() 
-  
+  const [role, setRole] = useState(session?.user.role||"") 
+ 
+
   async function changeRole() {
     if (session) {
       const updateduser=await changerole({ user: { email: session.user?.email } })
-      console.log("Role changed")
+      
+     
+      setRole(updateduser.role)
+      
       window.location.reload()
+      
     } else {
       console.error("Session is null");
     }
@@ -44,18 +53,18 @@ export default function Navbar() {
             <Link href="/explore" className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
               Home
             </Link>
-            <Link href={session?.user?.role === "TRAVELLER" ? "/querygen" : "/gdash" } className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-             {session?.user?.role === "TRAVELLER" ? "Explore" : "Dashboard"}
+            <Link href={session?.user.role=== "TRAVELLER" ? "/querygen" : "/gdash" } className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+             {session?.user.role === "TRAVELLER" ? "Explore" : "Dashboard"}
             </Link>
-            <Link href="/about" className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-              About
+            <Link href="/trevboard" className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+              My queries
             </Link>
             <Link href="/contact" className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
               Contact
             </Link>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white"  onClick={changeRole}>Switch to Guide Role</Button>
+            <Button type="button" className="bg-purple-600 hover:bg-purple-700 text-white"  onClick={changeRole}>Switch to Guide Role</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full border-black">
@@ -70,6 +79,7 @@ export default function Navbar() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">{session?.user?.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{session?.user?.role}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

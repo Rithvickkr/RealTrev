@@ -51,18 +51,17 @@ model Query {
   updatedAt  DateTime    @updatedAt
 
   responder User?       @relation("Responder", fields: [responderId], references: [id])
-  traveler User         @relation("Traveler", fields: [travelerId], references: [id])
+  traveler User          @relation("Traveler", fields: [travelerId], references: [id])
   location Location     @relation(fields: [locationId], references: [id])
   messages  Message[]
 }
 
 enum QueryStatus {
   PENDING
-  RESPONDED
-  CLOSED
+  ACCEPTED
+  RESOLVED
 }
-
 enum Role {
   TRAVELLER
-  LOCAL
+  GUIDE
 }

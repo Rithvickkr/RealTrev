@@ -1,139 +1,419 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { MapPin, Search, Smile, Paperclip, Send, Bell } from 'lucide-react'
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Send,
+  MapPin,
+  Compass,
+  Sun,
+  Moon,
+  Smile,
+  ChevronDown,
+  Camera,
+  Paperclip,
+  ImageIcon,
+  StarIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Mock data for demonstration
-const mockMessages = [
-  { id: 1, sender: 'Local', name: 'Emma', message: 'Welcome to Paris! How can I help you today?', avatar: '/placeholder.svg?height=40&width=40' },
-  { id: 2, sender: 'Traveler', name: 'Alex', message: 'Hi Emma! Im looking for some local food recommendations', avatar: '/placeholder.svg?height=40&width=40' },
-  { id: 3, sender: 'Local', name: 'Emma', message: 'Of course! I know some great places. What kind of cuisine are you interested in?', avatar: '/placeholder.svg?height=40&width=40' },
-]
+import { useRouter, useParams } from "next/navigation";
+import io, { Socket } from "socket.io-client";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
 
-export default function Component() {
-  const [messages, setMessages] = useState(mockMessages)
-  const [inputMessage, setInputMessage] = useState('')
-  const chatEndRef = useRef<HTMLDivElement>(null)
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import knowTheQuery from "@/app/lib/actions/knowthequery";
+ 
 
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+interface infoQ {
+  id: string;
+  responder: { name: string };
+  traveler: { name: string };
+  location: { name: string };
+}
+
+export default function TravelChatPage(session: any) {
+  const [inputMessage, setInputMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+
+  const [infoQ,setInfoQ]=useState<infoQ>()
+
+  const params = useParams();
+  const router = useRouter();
+  const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(
+    null
+  );
+  const [id, setId] = useState<string | undefined>(() =>
+    Array.isArray(params?.queryid) ? params.queryid[0] : params?.queryid
+  );
+  const [messages, setMessages] = useState<
+    { message: string; senderId: string; time: Date }[]
+  >([]);
+  const [input, setInput] = useState("");
+  console.error(session.session.user.id);
+  
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        sender: 'Traveler',
-        name: 'Alex',
-        message: inputMessage,
-        avatar: '/placeholder.svg?height=40&width=40'
+    const aboutquery = async () => {  
+      if (id) {
+        const infoQ = await knowTheQuery(id);
+        setInfoQ({
+          id: id,
+          responder: infoQ?.responder ? { name: infoQ.responder.name } : { name: "" },
+          traveler: infoQ?.traveler ? { name: infoQ.traveler.name } : { name: "" },
+          location: infoQ?.location ? { name: infoQ.location.name } : { name: "" },
+        });
+        
+      } else {
+        console.error("ID is undefined!");
       }
-      setMessages([...messages, newMessage])
-      setInputMessage('')
     }
-  }
+    aboutquery();
+    if (!params?.queryid) {
+      console.error("Query ID is missing!");
+      router.push("/error");
+      return;
+    }
+
+    const queryId = Array.isArray(params.queryid)
+      ? params.queryid[0]
+      : params.queryid;
+    setId(queryId);
+    console.log("Connecting to socket with Query ID:", queryId);
+
+    // Initialize socket connection
+    const socket = io("http://localhost:3002"); // Replace with your backend URL
+    socketRef.current = socket;
+
+    socket.emit("joinRoom", { queryid: queryId });
+    console.log("Joined room with Query ID:", queryId);
+
+    // Listen for incoming messages
+    socket.on(
+      "receiveMessage",
+      (payload: { message: string; senderId: string }) => {
+        console.log("Message received:", payload);
+        setMessages((prev) => [
+          ...prev,
+          { ...payload, id: prev.length + 1, time: new Date() },
+        ]);
+      }
+    );
+
+    // Cleanup on component unmount
+    return () => {
+      console.log("Disconnecting from socket...");
+      socket.disconnect();
+    };
+  }, [params?.queryid, router]);
+
+  const sendMessage = () => {
+    const date = new Date();
+    if (input.trim()) {
+      const payload = {
+        id: messages.length + 1,
+        queryid: id,
+        senderId: session.session?.user?.id || "anonymous", // Fallback if session is undefined
+        message: input,
+        time: date,
+      };
+
+      console.log("Sending message payload:", payload);
+
+      const socket = socketRef.current;
+      if (socket) {
+        try {
+          socket.emit("sendMessage", payload);
+        } catch (err) {
+          console.error("Error sending message:", err);
+        }
+      } else {
+        console.error("Socket is not initialized!");
+      }
+
+      setInput(""); // Clear input field
+    }
+  };
+
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleEmojiSelect = (emoji: any) => {
+    setInputMessage(inputMessage + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-100 to-purple-100">
+    <div className="flex flex-col sm:flex-row h-screen md:flex-row  ">
+       <motion.div
+      className="w-full sm:w-1/3  bg-gray-50 border-l border-gray-200 p-4 flex flex-col space-y-6 sm:relative  sm:h-full sm:overflow-y-auto"
+      initial={{ x: 300, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      {/* User Info */}
+      <motion.div
+        className="flex items-center space-x-4"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
+        <div className="h-12 w-12 bg-gradient-to-r from-purple-500 to-purple-700 rounded-full overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-110">
+          <img src="/placeholder-avatar.jpg" alt="User Avatar" className="object-cover w-full h-full" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 truncate">John Doe</h3>
+          <p className="text-sm text-gray-500 truncate">Guide</p>
+        </div>
+      </motion.div>
+
+      {/* Chat Actions */}
+      <motion.div
+        className="space-y-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <button
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+        >
+          Mark as Resolved
+        </button>
+        <button
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+        >
+          Report Issue
+        </button>
+      </motion.div>
+
+      {/* Notes Section */}
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
+        <h4 className="text-sm font-semibold text-gray-700 truncate">Your Notes</h4>
+        <textarea
+          className="w-full h-32 border border-gray-300 rounded-md p-2 text-sm resize-none focus:ring-2 focus:ring-purple-600 focus:outline-none transition-shadow duration-300"
+          placeholder="Add notes about this chat..."
+        ></textarea>
+      </motion.div>
+      <motion.div
+        className="space-y-2 mt-3 mb-3 "
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
+        <h4 className="text-sm font-semibold text-gray-700 truncate">Rate the chat</h4>
+        <div>
+          <StarIcon/>
+        </div>
+       
+      </motion.div>
+
+      {/* History Section */}
+      <motion.div
+        className="space-y-2 overflow-auto max-h-40 sm:max-h-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.6 }}
+      >
+        <h4 className="text-sm font-semibold text-gray-700 truncate ">Chat History</h4>
+        <div className="space-y-2">
+          <h3>NO history to show</h3>
+        </div>
+      </motion.div>
+
+      {/* Help/Info */}
+      
+    </motion.div>
+    <div className="flex flex-col h-full bg-green-50 w-full sm:w-3/4 dark:bg-green-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-md p-4 md:p-6">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center mb-4 md:mb-0">
-            <div className="mr-4 bg-blue-500 rounded-full p-2 animate-pulse">
-              <MapPin className="text-white" size={24} />
-            </div>
-            <h1 className="text-2xl font-bold text-blue-600">Local Connect Chat</h1>
-          </div>
-          <div className="relative w-full md:w-96">
-            <Input
-              type="text"
-              placeholder="Search for locals..."
-              className="pl-10 pr-4 py-2 w-full rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+      <header className="bg-white dark:bg-green-800 shadow-sm p-4 flex items-center justify-between transition-colors duration-300 border-b-2 border-green-200 dark:border-green-700">
+        <div className="flex items-center space-x-3">
+          <Avatar className="w-10 h-10 ring-2 ring-green-500 dark:ring-green-300">
+            <AvatarImage
+              src="/placeholder.svg?height=40&width=40"
+              alt="Local Guide"
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <AvatarFallback>{session.session?.user?.role === "TRAVELLER"? (infoQ?.responder?.name)?.charAt(0).toUpperCase() : (infoQ?.traveler?.name)?.charAt(0).toUpperCase()} </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="font-semibold text-lg text-green-800 dark:text-green-100">
+              {session.session?.user?.role === "TRAVELLER"? infoQ?.responder?.name : infoQ?.traveler?.name} 
+            </h1>
+            <div className="flex items-center text-sm text-green-600 dark:text-green-300">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>{infoQ?.location?.name}</span>
+            </div>
           </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-green-600 dark:text-green-300 border-green-300 dark:border-green-600 hidden sm:flex"
+          >
+            <Compass className="w-4 h-4 mr-1" />
+            Explore {infoQ?.location?.name}
+          </Button>
         </div>
       </header>
 
-      {/* Main Chat Area */}
-      <main className="flex-grow overflow-y-auto p-4 md:p-6">
-        <div className="container mx-auto max-w-4xl">
+      {/* Chat Window */}
+      <div
+        ref={chatWindowRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('/placeholder.svg?height=400&width=400')] bg-repeat bg-opacity-5"
+      >
+        <AnimatePresence>
           {messages.map((msg, index) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === 'Local' ? 'justify-start' : 'justify-end'} mb-4 animate-fadeIn`}
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className={`flex ${msg.senderId === session.session?.user?.id ? "justify-end" : "justify-start"}`}
             >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={msg.avatar} alt={msg.name} />
-                      <AvatarFallback>{msg.name[0]}</AvatarFallback>
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{msg.name}</p>
-                    <p className="text-xs text-gray-500">{msg.sender === 'Local' ? 'Local Guide' : 'Traveler'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
               <div
-                className={`ml-2 p-3 rounded-lg max-w-xs md:max-w-md lg:max-w-lg ${
-                  msg.sender === 'Local'
-                    ? 'bg-blue-100 text-blue-900'
-                    : 'bg-green-100 text-green-900'
-                }`}
+                className={`max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-2xl p-3 ${
+                  msg.senderId === session.session?.user?.id
+                    ? "bg-green-500 text-white"
+                    : "bg-white dark:bg-green-700 text-green-900 dark:text-green-100"
+                } shadow-md`}
               >
-                <p className="font-semibold">{msg.name}</p>
                 <p>{msg.message}</p>
+                <div className="mt-2 text-xs opacity-70 text-right">
+                  {formatTime(msg.time)}
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-          <div ref={chatEndRef} />
-        </div>
-      </main>
+        </AnimatePresence>
+        {isTyping && (
+          <div className="flex items-center text-green-600 dark:text-green-300">
+            <div className="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span className="ml-2">Local guide is typing...</span>
+          </div>
+        )}
+      </div>
 
-      {/* Message Input Area */}
-      <footer className="bg-white border-t border-gray-200 p-4">
-        <div className="container mx-auto max-w-4xl flex items-center">
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-500">
-            <Smile className="h-6 w-6" />
-            <span className="sr-only">Add emoji</span>
+      {/* Message Input */}
+      <div className="bg-white dark:bg-green-800 p-4 shadow-lg transition-colors duration-300 border-t-2 border-green-200 dark:border-green-700">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+            aria-label="Open emoji picker"
+          >
+            <Smile className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-500">
-            <Paperclip className="h-6 w-6" />
-            <span className="sr-only">Attach file</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+            aria-label="Attach image"
+          >
+            <ImageIcon className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+            aria-label="Attach file"
+          >
+            <Paperclip className="h-5 w-5" />
           </Button>
           <Input
             type="text"
-            placeholder="Type your message..."
-            className="flex-grow mx-2"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && sendMessage}
+            placeholder="Ask your local guide..."
+            className="flex-1 border-green-200 dark:border-green-600 focus:ring-green-500 dark:focus:ring-green-400"
           />
-          <Button onClick={handleSendMessage} className="bg-blue-500 hover:bg-blue-600 text-white">
+          <Button
+            type="button"
+            onClick={sendMessage}
+            className="bg-green-500 hover:bg-green-600 text-white"
+          >
             <Send className="h-5 w-5 mr-2" />
-            Send
+            <span className="hidden sm:inline">Send</span>
           </Button>
         </div>
-      </footer>
-
-      {/* Notification Area */}
-      <div className="fixed top-4 right-4 bg-white rounded-full shadow-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
-        <Bell className="text-blue-500" size={24} />
-        <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-          3
-        </span>
+        {showEmojiPicker && (
+          <div className="absolute bottom-16 right-4 z-10">
+            <Picker
+              data={data}
+              onEmojiSelect={handleEmojiSelect}
+              theme={"light"}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Floating Action Button for Mobile */}
+      <Button
+        className="fixed bottom-4 right-4 rounded-full p-3 bg-green-500 hover:bg-green-600 text-white shadow-lg md:hidden"
+        onClick={() =>
+          chatWindowRef.current?.scrollTo(0, chatWindowRef.current.scrollHeight)
+        }
+        aria-label="Scroll to bottom"
+      >
+        <ChevronDown className="h-6 w-6" />
+      </Button>
+
+      <style jsx>{`
+        .typing-indicator {
+          display: flex;
+          align-items: center;
+        }
+        .typing-indicator span {
+          height: 8px;
+          width: 8px;
+          background-color: currentColor;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 4px;
+          animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) {
+          animation-delay: -0.32s;
+        }
+        .typing-indicator span:nth-child(2) {
+          animation-delay: -0.16s;
+        }
+        @keyframes bounce {
+          0%,
+          80%,
+          100% {
+            transform: scale(0);
+          }
+          40% {
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
-  )
+    </div>
+  );
 }
