@@ -1,537 +1,358 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Camera,
-  Facebook,
-  Twitter,
-  Instagram,
-} from "lucide-react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 
-// Leaflet CSS import (you'll need to add this to your project)
-import "leaflet/dist/leaflet.css";
+import {
+  Moon,
+  Sun,
+  Menu,
+  X,
+  Search,
+  MapPin,
+  Home,
+  Compass,
+  MessageCircle,
+  User,
+  ChevronDown,
+  Star,
+  Gift,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Globe } from "@/components/ui/globe";
 
-export default function ExplorePage() {
-  const [currentInsight, setCurrentInsight] = useState(0);
-  const [currentSpotlight, setCurrentSpotlight] = useState(0);
+interface LocalExpertCardProps {
+  name: string;
+  expertise: string;
+  rating: number;
+  image: string;
+}
 
-  const locations: {
-    name: string;
-    position: [number, number];
-    fact: string;
-  }[] = [
-    {
-      name: "Manali",
-      position: [32.2432, 77.1892],
-      fact: "Known for adventure sports and scenic beauty",
-    },
-    {
-      name: "Goa",
-      position: [15.2993, 74.124],
-      fact: "Famous for its beaches and vibrant nightlife",
-    },
-    {
-      name: "Jaipur",
-      position: [26.9124, 75.7873],
-      fact: "The Pink City with rich history and culture",
-    },
-  ];
+const LocalExpertCard = ({
+  name,
+  expertise,
+  rating,
+  image,
+}: LocalExpertCardProps) => (
+  <Card className="w-64 shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <CardContent className="p-4">
+      <div className="relative w-full h-40 mb-4">
+        <Image
+          src={image}
+          alt={name}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-lg"
+        />
+      </div>
+      <h3 className="font-bold text-lg mb-1">{name}</h3>
+      <p className="text-sm text-muted-foreground mb-2">{expertise}</p>
+      <div className="flex items-center mb-3">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            className={`w-4 h-4 ${i < rating ? "text-yellow-400" : "text-gray-300"}`}
+          />
+        ))}
+      </div>
+      <Button className="w-full" variant="outline">
+        Chat with {name}
+      </Button>
+    </CardContent>
+  </Card>
+);
 
-  const localInsights = [
-    {
-      title: "Hidden Waterfall Trek",
-      image: "https://picsum.photos/seed/{1}picsum/400/300",
-      description: "Discover a secret waterfall just outside Manali!",
-    },
-    {
-      title: "Beachside Yoga Retreat",
-      image: "https://picsum.photos/seed/{2}picsum/400/300",
-      description: "Join locals for sunrise yoga on Goa's beautiful beaches.",
-    },
-    {
-      title: "Royal Palace Tour",
-      image: "https://picsum.photos/seed/{3}picsum/400/300",
-      description: "Explore Jaipur's majestic palaces with a local historian.",
-    },
-  ];
+interface TestimonialCardProps {
+  text: string;
+  author: string;
+}
 
-  const communitySpotlights = [
-    {
-      name: "Priya",
-      location: "Manali",
-      avatar: "https://picsum.photos/seed/{seed}picsum/100",
-      bio: "Adventure enthusiast and nature lover",
-      story: "I love showing visitors the hidden gems of Manali's mountains!",
-    },
-    {
-      name: "Rahul",
-      location: "Goa",
-      avatar: "https://picsum.photos/seed/{seed}picsum/100",
-      bio: "Surf instructor and beach cleanup organizer",
-      story:
-        "Let me teach you to ride the waves and protect our beautiful coastline!",
-    },
-    {
-      name: "Anita",
-      location: "Jaipur",
-      avatar: "https://picsum.photos/seed/{seed}picsum/100",
-      bio: "Local food expert and cooking class host",
-      story:
-        "Experience the flavors of Rajasthan in my traditional cooking classes!",
-    },
-  ];
+const TestimonialCard = ({ text, author }: TestimonialCardProps) => (
+  <Card className="w-64 shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <CardContent className="p-4">
+      <p className="italic text-sm mb-2">"{text}"</p>
+      <p className="text-right text-sm font-semibold">- {author}</p>
+    </CardContent>
+  </Card>
+);
 
-  const userContent = [
-    {
-      image:
-        "https://fastly.picsum.photos/id/10/2500/1667.jpg?hmac=J04WWC_ebchx3WwzbM-Z4_KC_LeLBWr5LZMaAkWkF68",
-      location: "Manali",
-    },
-    { image: "https://picsum.photos/seed/picsum/200", location: "Goa" },
-    { image: "https://picsum.photos/seed/picsum/200", location: "Jaipur" },
-    { image: "https://picsum.photos/seed/picsum/200", location: "Manali" },
-    { image: "https://picsum.photos/seed/picsum/200", location: "Goa" },
-    { image: "https://picsum.photos/seed/picsum/200", location: "Jaipur" },
-  ];
-
-  // Custom icon for map markers
-  const customIcon = new L.Icon({
-    iconUrl: "https://picsum.photos/seed/{seed}picsum/400/300",
-
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-  });
+export default function Component() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // This effect is needed to properly load Leaflet in Next.js
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "/placeholder.svg?height=82&width=50",
-      iconUrl: "/placeholder.svg?height=41&width=25",
-      shadowUrl: "/placeholder.svg?height=41&width=41",
-    });
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle("dark", darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+
   return (
-    <div className="min-h-screen bg-beige-50">
+    <div
+      className={`min-h-screen bg-gradient-to-b ${darkMode ? "from-gray-900 to-gray-800" : "from-sky-100 to-white"} transition-colors duration-300`}
+    >
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center text-white">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1485433592409-9018e83a1f0d?q=80&w=1814&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
-          }}
-        >
-          <div className="absolute inset-0 bg-black opacity-50"></div>
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        
+        <div className="absolute inset-0">
+        <Image src="/placeholder.svg?height=1080&width=1920" alt="Travel destination" layout="fill" objectFit="cover" priority />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
-         
-          {/* <motion.img
-            src="/placeholder.svg?height=100&width=300"
-            alt="RealTrev Logo"
-            className="mx-auto mb-8 w-48 sm:w-64 md:w-80"
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          /> */}
-          <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            REALTREV
-            <br></br>
-            Connect with Locals for Real-Time Adventures!
-          </motion.h1>
-          <motion.div
-            className="max-w-md mx-auto"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                type="text"
-                placeholder="Search for a destination"
-                className="flex-grow bg-white text-gray-800"
-              />
-              <Button
-                type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Interactive Map */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-teal-700">
-            Explore Destinations
-          </h2>
-          <div className="h-[300px] sm:h-[400px] md:h-[500px] rounded-lg overflow-hidden">
-            <MapContainer
-              center={[20.5937, 78.9629]}
-              zoom={5}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {locations.map((location, index) => (
-                <Marker
-                  key={index}
-                  position={location.position}
-                  icon={customIcon}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <h3 className="font-bold">{location.name}</h3>
-                      <p>{location.fact}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Local Insights */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-orange-100">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-teal-700">
-            Featured Local Insights
-          </h2>
-          <div className="relative">
-            <motion.div
-              key={currentInsight}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-lg shadow-xl p-4 sm:p-6"
-            >
-              <div className="flex flex-col md:flex-row items-center">
-                <img
-                  src={localInsights[currentInsight]?.image}
-                  alt={localInsights[currentInsight]?.title}
-                  className="w-full md:w-1/2 h-48 sm:h-64 object-cover rounded-lg mb-4 md:mb-0 md:mr-6"
-                />
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-orange-600">
-                    {localInsights[currentInsight]?.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {localInsights[currentInsight]?.description}
-                  </p>
-                  <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-                    Learn More
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-            <button
-              onClick={() =>
-                setCurrentInsight(
-                  (prev) =>
-                    (prev - 1 + localInsights.length) % localInsights.length
-                )
-              }
-              className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md text-orange-500 hover:text-orange-700 transition-colors duration-300"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
-            </button>
-            <button
-              onClick={() =>
-                setCurrentInsight((prev) => (prev + 1) % localInsights.length)
-              }
-              className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md text-orange-500 hover:text-orange-700 transition-colors duration-300"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Community Spotlights */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-teal-700">
-            Community Spotlights
-          </h2>
-          <div className="relative">
-            <motion.div
-              key={currentSpotlight}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-lg shadow-xl p-4 sm:p-6"
-            >
-              <div className="flex flex-col md:flex-row items-center">
-                <Avatar className="w-24 h-24 sm:w-32 sm:h-32 mb-4 md:mb-0 md:mr-6">
-                  <AvatarImage
-                    src={communitySpotlights[currentSpotlight]?.avatar}
-                    alt={communitySpotlights[currentSpotlight]?.name}
-                  />
-                  <AvatarFallback>
-                    {communitySpotlights[currentSpotlight]?.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-orange-600">
-                    {communitySpotlights[currentSpotlight]?.name}
-                  </h3>
-                  <p className="text-gray-600 mb-2">
-                    {communitySpotlights[currentSpotlight]?.location} |{" "}
-                    {communitySpotlights[currentSpotlight]?.bio}
-                  </p>
-                  <p className="text-gray-800 mb-4">
-                    "{communitySpotlights[currentSpotlight]?.story}"
-                  </p>
-                  <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-                    Connect
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-            <button
-              onClick={() =>
-                setCurrentSpotlight(
-                  (prev) =>
-                    (prev - 1 + communitySpotlights.length) %
-                    communitySpotlights.length
-                )
-              }
-              className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md text-orange-500 hover:text-orange-700 transition-colors duration-300"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
-            </button>
-            <button
-              onClick={() =>
-                setCurrentSpotlight(
-                  (prev) => (prev + 1) % communitySpotlights.length
-                )
-              }
-              className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md text-orange-500 hover:text-orange-700 transition-colors duration-300"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* User-Generated Content */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-yellow-100">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-teal-700">
-            Traveler Moments
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {userContent.map((content, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Card className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <img
-                      src={content.image}
-                      alt={`User content from ${content.location}`}
-                      className="w-full h-32 sm:h-40 object-cover"
-                    />
-                    <div className="p-2 bg-white">
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        {content.location}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">
-              Share your adventures with #RealTrevMoments for a chance to be
-              featured!
-            </p>
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-              <Camera className="h-4 w-4 mr-2" />
-              Share Your Moment
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-teal-600 text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
-            Ready to Start Your Adventure?
-          </h2>
-          <p className="text-lg sm:text-xl mb-8">
-            Sign up now and get your first chat with a local guide for free!
+        <div className="relative z-10 text-center text-white">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-pulse">
+            Stay Connected to the Real World, Wherever You Go!
+          </h1>
+          <p className="text-xl md:text-2xl mb-8">
+            Real-time travel updates, personalized advice, and tips directly
+            from locals.
           </p>
           <Button
             size="lg"
-            className="bg-yellow-400 hover:bg-yellow-500 text-teal-800 text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3"
+            className="rounded-full text-lg px-8 py-6 bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:scale-105"
           >
-            Start Exploring Now
+            Connect with Locals Now
           </Button>
-          <p className="mt-4 text-xs sm:text-sm">
-            Download our app for exclusive local tips and real-time updates.
-          </p>
+        </div>
+      </section>
+
+      {/* Search Bar and Filters */}
+      <section className="py-16 bg-white dark:bg-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search your destination..."
+                className="w-full pl-10 pr-4 py-3 rounded-full text-lg shadow-lg focus:ring-2 focus:ring-primary"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary animate-pulse" />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button variant="outline">Weather</Button>
+              <Button variant="outline">News</Button>
+              <Button variant="outline">Safety</Button>
+              <Button variant="outline">Travel Tips</Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 bg-gray-100 dark:bg-gray-700">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            How RealTrev Works
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { title: "Search Your Destination", icon: Search },
+              { title: "Connect with Local Experts", icon: MessageCircle },
+              { title: "Get Real-Time Updates & Tips", icon: Compass },
+            ].map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="mb-4 inline-block p-4 bg-primary rounded-full text-white">
+                  <step.icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Local Experts and Testimonials */}
+      <section className="py-16 bg-white dark:bg-gray-800">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Featured Local Experts
+          </h2>
+          <div className="flex overflow-x-auto pb-8 space-x-6">
+            <LocalExpertCard
+              name="John Doe"
+              expertise="City Explorer"
+              rating={4}
+              image="/placeholder.svg?height=200&width=200"
+            />
+            <LocalExpertCard
+              name="Jane Smith"
+              expertise="Food Connoisseur"
+              rating={5}
+              image="/placeholder.svg?height=200&width=200"
+            />
+            <LocalExpertCard
+              name="Mike Johnson"
+              expertise="Adventure Guide"
+              rating={4}
+              image="/placeholder.svg?height=200&width=200"
+            />
+            <LocalExpertCard
+              name="Emily Brown"
+              expertise="Cultural Expert"
+              rating={5}
+              image="/placeholder.svg?height=200&width=200"
+            />
+          </div>
+          <h2 className="text-3xl font-bold text-center my-12">
+            Traveler Testimonials
+          </h2>
+          <div className="flex overflow-x-auto pb-8 space-x-6">
+            <TestimonialCard
+              text="RealTrev made my trip so much more enjoyable! The local insights were invaluable."
+              author="Sarah T."
+            />
+            <TestimonialCard
+              text="I felt like I had a friend in every city thanks to RealTrev's local experts."
+              author="Mark R."
+            />
+            <TestimonialCard
+              text="The real-time updates saved me from a potential travel disaster. Highly recommended!"
+              author="Lisa M."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Trev Coins Wallet */}
+      <section className="py-16 bg-gray-100 dark:bg-gray-700">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Trev Coins Wallet
+          </h2>
+          <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-2xl font-bold">250 Trev Coins</span>
+              <Gift className="w-8 h-8 text-primary" />
+            </div>
+            <p className="mb-4">Track your earned coins and redeem rewards!</p>
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Progress to Next Reward</h3>
+              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-4 overflow-hidden">
+                <div
+                  className="bg-primary h-full"
+                  style={{ width: "60%" }}
+                ></div>
+              </div>
+              <p className="text-sm mt-2">
+                150 coins to go for your next reward!
+              </p>
+            </div>
+            <Button className="w-full">Browse Rewards</Button>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">About RealTrev</h3>
-            <p className="text-gray-300 text-sm">
-              Connecting travelers with locals for authentic experiences and
-              real-time insights.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Explore
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  How It Works
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Safety Tips
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Travel Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Community Guidelines
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  FAQs
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors duration-300"
-                >
-                  Contact Support
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Stay Connected</h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Subscribe to our newsletter for travel tips and exclusive offers.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 mb-4">
-              <Input
-                type="email"
-                placeholder="Your email"
-                className="flex-grow bg-gray-700 text-white border-gray-600"
-              />
-              <Button
-                type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                Subscribe
-              </Button>
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">RealTrev</h3>
+              <p className="text-sm text-gray-400">
+                Connecting travelers with local experts for real-time updates
+                and personalized advice.
+              </p>
             </div>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors duration-300"
-              >
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors duration-300"
-              >
-                <Twitter className="h-6 w-6" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors duration-300"
-              >
-                <Instagram className="h-6 w-6" />
-              </a>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Stay Connected</h3>
+              <form className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full"
+                />
+                <Button type="submit" className="w-full">
+                  Subscribe
+                </Button>
+              </form>
             </div>
           </div>
-        </div>
-        <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-          <p className="text-gray-300 text-sm">
-            &copy; 2024 RealTrev. All rights reserved.
-          </p>
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+            <p className="text-sm text-gray-400">
+              &copy; {new Date().getFullYear()} RealTrev. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

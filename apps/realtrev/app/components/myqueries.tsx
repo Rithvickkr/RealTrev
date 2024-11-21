@@ -65,7 +65,7 @@ export default function MyQueriesPage(session: any) {
     
       <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-100' : 'bg-sky-50 text-slate-900'}`}>
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <header className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <header className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-14">
             <h1 className="text-3xl font-bold text-teal-600 dark:text-teal-400">My Queries</h1>
             <div className="flex items-center gap-4">
               <Button 
