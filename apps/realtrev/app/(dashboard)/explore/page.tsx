@@ -107,7 +107,7 @@ export default function Component() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         
         <div className="absolute inset-0">
-        <Image src="/placeholder.svg?height=1080&width=1920" alt="Travel destination" layout="fill" objectFit="cover" priority />
+        <Image src="https://plus.unsplash.com/premium_photo-1673697239981-389164b7b87f?q=80&w=2044&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Travel destination" layout="fill" objectFit="cover" priority />
           <div className="absolute inset-0 bg-black/50" />
         </div>
         <div className="relative z-10 text-center text-white">
