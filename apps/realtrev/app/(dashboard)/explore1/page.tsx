@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AlertTriangle, MapPin, ThumbsUp, Share2, Eye, Filter, Plus, X, TrendingUp, Clock, Search, Zap, ChevronLeft, ChevronRight, Menu } from 'lucide-react'
+import LiveMap from '@/app/components/map'
 
 // Placeholder data
 const updates = [
@@ -76,7 +77,7 @@ export default function ExplorePage() {
 
       <div className="flex-1 flex overflow-hidden mt-16">
         <animated.div style={mapAnimation} className="bg-gray-200 flex items-center justify-center">
-          <p className="text-2xl text-gray-600">Map Placeholder</p>
+          <LiveMap  />
         </animated.div>
         
         <animated.div style={feedAnimation} className="bg-white overflow-hidden flex flex-col">
@@ -93,7 +94,7 @@ export default function ExplorePage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="flex-grow"
                     />
-                  </div>
+                  
                   <div className="flex justify-between items-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -129,6 +130,7 @@ export default function ExplorePage() {
               (isMapOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)
             }
           </Button>
+          </div>
                 </CardContent>
               </Card>
 
@@ -158,10 +160,18 @@ export default function ExplorePage() {
           </div>
         </animated.div>
       </div>
-
-      <Button className="fixed bottom-4 right-4 rounded-full shadow-lg z-10" size="lg">
+      <div className='flex justify-between items-center'>
+        {isMapView ? <Button  className="fixed top-24 right-5 rounded-full shadow-lg z-50" variant="outline" size="icon" onClick={toggleView}>
+            {isSmallScreen ? 
+              (isMapView ? <X className="h-4 w-4" /> : null) :  (isMapOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)
+            }
+          </Button> : null} 
+      <div className=''>
+      <Button className="fixed bottom-4 left-96 rounded-full shadow-lg z-10" size="lg">
         <Plus className="mr-2 h-4 w-4" /> Post Update
       </Button>
+      </div>
+      </div>
     </div>
   )
 }
