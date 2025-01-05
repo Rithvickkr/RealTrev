@@ -23,6 +23,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { Globe } from "@/components/ui/globe";
+import { useRouter } from "next/navigation";
+import Background from "@/app/background";
+import TravelMinimalBackground from "@/app/components/background";
 
 interface LocalExpertCardProps {
   name: string;
@@ -83,6 +86,7 @@ export default function Component() {
   const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const Router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -103,11 +107,17 @@ export default function Component() {
     <div
       className={`min-h-screen bg-gradient-to-b ${darkMode ? "from-gray-900 to-gray-800" : "from-sky-100 to-white"} transition-colors duration-300`}
     >
+      
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        
         <div className="absolute inset-0">
-        <Image src="https://plus.unsplash.com/premium_photo-1673697239981-389164b7b87f?q=80&w=2044&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Travel destination" layout="fill" objectFit="cover" priority />
+          <Image
+            src="https://plus.unsplash.com/premium_photo-1673697239981-389164b7b87f?q=80&w=2044&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Travel destination"
+            layout="fill"
+            objectFit="cover"
+            priority
+          />
           <div className="absolute inset-0 bg-black/50" />
         </div>
         <div className="relative z-10 text-center text-white">
@@ -120,6 +130,7 @@ export default function Component() {
           </p>
           <Button
             size="lg"
+            onClick={() => Router.push("/querygen")}
             className="rounded-full text-lg px-8 py-6 bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:scale-105"
           >
             Connect with Locals Now
@@ -128,7 +139,8 @@ export default function Component() {
       </section>
 
       {/* Search Bar and Filters */}
-      <section className="py-16 bg-white dark:bg-gray-800">
+      <section className="py-16 bg-transparent  dark:bg-gray-800">
+      <TravelMinimalBackground />
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
@@ -151,7 +163,7 @@ export default function Component() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-gray-100 dark:bg-gray-700">
+      <section className="py-16 bg-inherit dark:bg-gray-700">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             How RealTrev Works
@@ -177,9 +189,9 @@ export default function Component() {
       </section>
 
       {/* Featured Local Experts and Testimonials */}
-      <section className="py-16 bg-white dark:bg-gray-800">
+      <section className="py-16 bg-transparent dark:bg-gray-800 ">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          {/* <h2 className="text-3xl font-bold text-center mb-12">
             Featured Local Experts
           </h2>
           <div className="flex overflow-x-auto pb-8 space-x-6">
@@ -207,7 +219,7 @@ export default function Component() {
               rating={5}
               image="/placeholder.svg?height=200&width=200"
             />
-          </div>
+          </div> */}
           <h2 className="text-3xl font-bold text-center my-12">
             Traveler Testimonials
           </h2>
@@ -229,7 +241,9 @@ export default function Component() {
       </section>
 
       {/* Trev Coins Wallet */}
-      <section className="py-16 bg-gray-100 dark:bg-gray-700">
+      
+      <section className="py-16  dark:bg-gray-700">
+        
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             Trev Coins Wallet

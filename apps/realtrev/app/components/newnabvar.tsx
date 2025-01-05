@@ -105,7 +105,8 @@ export default function Navbar() {
         </Link>
         <div className="hidden md:flex items-center space-x-6">
           <NavbarItem icon={Home} text="Home" href="/"/>
-          <NavbarItem icon={Compass} text="Explore" href={!isGuide?"/querygen":"/gdash"}/>
+          <NavbarItem icon={Compass} text="Explore" href="/explore1"/>
+          {/* <NavbarItem icon={Compass} text="Explore" href={!isGuide?"/querygen":"/gdash"}/> */}
           <NavbarItem icon={MessageCircle} text={!isGuide ? "Connect" : "Dashboard"}  href={!isGuide?"/trevboard":"/gdash"}/>
           <NavbarItem icon={User} text="Profile" />
         </div>

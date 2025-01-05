@@ -50,11 +50,17 @@ export default function Navbar() {
               Home
             </Link>
             <Link
+              href="/explore1"
+              className="text-gray-600 hover:text-purple-600 transition-colors duration-300"
+            >
+              Explore
+            </Link>
+            {/* <Link
               href={session?.user.role === "TRAVELLER" ? "/querygen" : "/gdash"}
               className="text-gray-600 hover:text-purple-600 transition-colors duration-300"
             >
               {session?.user.role === "TRAVELLER" ? "Explore" : "Dashboard"}
-            </Link>
+            </Link> */}
             <Link
               href="/trevboard"
               className="text-gray-600 hover:text-purple-600 transition-colors duration-300"
