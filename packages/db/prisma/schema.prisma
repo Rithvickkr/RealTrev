@@ -16,8 +16,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  answeredQueries Query[] @relation("Responder")
-  submittedQueries Query[] @relation("Traveler")
+  answeredQueries  Query[]   @relation("Responder")
+  submittedQueries Query[]   @relation("Traveler")
+  messages         Message[]
+  updates          Updates[]
 }
 
 model Message {
@@ -27,7 +29,9 @@ model Message {
   queryId   String
   createdAt DateTime @default(now())
 
-  query Query @relation(fields: [queryId], references: [id])
+  query  Query   @relation(fields: [queryId], references: [id])
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
 
 model Location {
@@ -41,19 +45,35 @@ model Location {
 }
 
 model Query {
-  id         String      @id @default(uuid())
-  travelerId String
-  locationId Int
-  responderId   String?
-  queryText  String
-  status     QueryStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(uuid())
+  travelerId  String
+  locationId  Int
+  responderId String?
+  queryText   String
+  status      QueryStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  severity    Severity?
+  responder   User?       @relation("Responder", fields: [responderId], references: [id])
+  traveler    User        @relation("Traveler", fields: [travelerId], references: [id])
+  location    Location    @relation(fields: [locationId], references: [id])
+  messages    Message[]
+}
 
-  responder User?       @relation("Responder", fields: [responderId], references: [id])
-  traveler User          @relation("Traveler", fields: [travelerId], references: [id])
-  location Location     @relation(fields: [locationId], references: [id])
-  messages  Message[]
+model Updates {
+  id          Int       @id @default(autoincrement())
+  title       String    // Title of the update
+  description String // Description of the update
+  coordinates Json // Geospatial column for coordinates
+  severity    Severity? // Severity level (optional)
+  timestamp   DateTime  @default(now()) // Timestamp when the update was created
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  likes       Int       @default(0) // Number of likes
+  dislikes    Int       @default(0) // Number of dislikes
+
+  @@index([severity]) // Index on severity for faster lookups
+  @@index([timestamp]) // Index on timestamp for efficient sorting by time
 }
 
 enum QueryStatus {
@@ -61,7 +81,14 @@ enum QueryStatus {
   ACCEPTED
   RESOLVED
 }
+
 enum Role {
   TRAVELLER
   GUIDE
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
 }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./Providers";
 
 import Navbar from "./components/newnabvar";
+import Footer from "./components/footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,16 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body  className={`${geistSans.variable} ${geistMono.variable}`}> 
-        
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
-         <div>
-      <Navbar />
-      <div >
-        {children}
-      </div>
-    </div>
-        
+          <div>
+            <Navbar />
+            <div>{children}</div>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

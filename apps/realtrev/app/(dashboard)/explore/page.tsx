@@ -1,31 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 
+import TravelMinimalBackground from "@/app/components/background";
 import {
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Search,
-  MapPin,
-  Home,
   Compass,
-  MessageCircle,
-  User,
-  ChevronDown,
-  Star,
   Gift,
+  MapPin,
+  MessageCircle,
+  Search,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { Globe } from "@/components/ui/globe";
 import { useRouter } from "next/navigation";
-import Background from "@/app/background";
-import TravelMinimalBackground from "@/app/components/background";
 
 interface LocalExpertCardProps {
   name: string;
@@ -96,20 +86,13 @@ export default function Component() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-  }, [darkMode]);
-
-  const toggleDarkMode = () => setDarkMode(!darkMode);
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-
   return (
     <div
-      className={`min-h-screen bg-gradient-to-b ${darkMode ? "from-gray-900 to-gray-800" : "from-sky-100 to-white"} transition-colors duration-300`}
+      className={` relative min-h-screen bg-gradient-to-b ${darkMode ? "from-gray-900 to-gray-800" : "from-sky-100 to-white"} transition-colors duration-300`}
     >
-      
+      <TravelMinimalBackground />
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative z-10 h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="https://plus.unsplash.com/premium_photo-1673697239981-389164b7b87f?q=80&w=2044&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -139,8 +122,7 @@ export default function Component() {
       </section>
 
       {/* Search Bar and Filters */}
-      <section className="py-16 bg-transparent  dark:bg-gray-800">
-      <TravelMinimalBackground />
+      <section className=" relative z-10 py-16 bg-opacity-70 bg-slate-50  ">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
@@ -163,7 +145,7 @@ export default function Component() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-inherit dark:bg-gray-700">
+      <section className=" relative z-10 py-16 bg-zinc-700 bg-opacity-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             How RealTrev Works
@@ -175,11 +157,11 @@ export default function Component() {
               { title: "Get Real-Time Updates & Tips", icon: Compass },
             ].map((step, index) => (
               <div key={index} className="text-center">
-                <div className="mb-4 inline-block p-4 bg-primary rounded-full text-white">
-                  <step.icon className="w-8 h-8" />
+                <div className="mb-4 inline-block p-4 bg-primary rounded-full text-white dark:bg-black dark:text-slate-100">
+                  <step.icon className="w-8 h-8 " />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-black">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 </p>
               </div>
@@ -189,7 +171,7 @@ export default function Component() {
       </section>
 
       {/* Featured Local Experts and Testimonials */}
-      <section className="py-16 bg-transparent dark:bg-gray-800 ">
+      <section className=" relative z-10 py-16 bg-slate-100 bg-opacity-50  ">
         <div className="container mx-auto px-4">
           {/* <h2 className="text-3xl font-bold text-center mb-12">
             Featured Local Experts
@@ -241,9 +223,8 @@ export default function Component() {
       </section>
 
       {/* Trev Coins Wallet */}
-      
-      <section className="py-16  dark:bg-gray-700">
-        
+
+      <section className="relative py-16 bg-neutral-800 bg-opacity-70">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             Trev Coins Wallet
@@ -270,105 +251,6 @@ export default function Component() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">RealTrev</h3>
-              <p className="text-sm text-gray-400">
-                Connecting travelers with local experts for real-time updates
-                and personalized advice.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    FAQs
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    Cookie Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Stay Connected</h3>
-              <form className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full"
-                />
-                <Button type="submit" className="w-full">
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-            <p className="text-sm text-gray-400">
-              &copy; {new Date().getFullYear()} RealTrev. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
