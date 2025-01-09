@@ -1,10 +1,4 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth";
 import EnhancedTravelerQuerySubmission from "@/app/components/queryform";
-export default async function Page() {
-  const session = await getServerSession(authOptions);
-  console.log("Session", session);  // Debug session
-  
-  
-  return <EnhancedTravelerQuerySubmission  />;
+export default function Page() {
+  return <EnhancedTravelerQuerySubmission />;
 }

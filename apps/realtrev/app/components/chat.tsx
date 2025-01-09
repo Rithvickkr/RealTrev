@@ -39,8 +39,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { info } from "console";
+
 import { Textarea } from "@/components/ui/textarea";
+import TravelMinimalBackground from "./background";
 
 interface infoQ {
   id: string;
@@ -188,12 +189,14 @@ export default function TravelChatPage(session: any) {
   };
 
   return (
-    <div className="flex flex-col  sm:flex-row h-screen md:flex-row-reverse  ">
-      <div className="flex flex-col h-full bg-green-50 w-full sm:w-3/4 dark:bg-green-900 transition-colors duration-300 mt-16">
+    <div>
+      <TravelMinimalBackground />
+    <div className=" relative flex flex-col h-screen md:flex-row-reverse">
+      <div className=" relative flex flex-col w-full h-full bg-transparent transition-colors duration-300">
         {/* Header */}
-        <header className="bg-white dark:bg-green-800 shadow-sm p-4 flex items-center justify-between transition-colors duration-300 border-b-2 border-green-200 dark:border-green-700">
+        <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center justify-between transition-colors duration-300 border-b-2 border-gray-200 dark:border-gray-700 mt-16">
           <div className="flex items-center space-x-3">
-            <Avatar className="w-10 h-10 ring-2 ring-green-500 dark:ring-green-300">
+            <Avatar className="w-10 h-10 ring-2 ring-blue-500 dark:ring-blue-300">
               <AvatarImage
                 src="/placeholder.svg?height=40&width=40"
                 alt="Local Guide"
@@ -205,12 +208,12 @@ export default function TravelChatPage(session: any) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="font-semibold text-lg text-green-800 dark:text-green-100">
+              <h1 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
                 {session.session?.user?.role === "TRAVELLER"
                   ? infoQ?.responder?.name
                   : infoQ?.traveler?.name}
               </h1>
-              <div className="flex items-center text-sm text-green-600 dark:text-green-300">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <MapPin className="w-4 h-4 mr-1" />
                 <span>{infoQ?.location?.name}</span>
               </div>
@@ -220,7 +223,7 @@ export default function TravelChatPage(session: any) {
             <Button
               variant="outline"
               size="sm"
-              className="text-green-600 dark:text-green-300 border-green-300 dark:border-green-600 hidden sm:flex"
+              className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hidden sm:flex"
             >
               <Compass className="w-4 h-4 mr-1" />
               Explore {infoQ?.location?.name}
@@ -231,7 +234,7 @@ export default function TravelChatPage(session: any) {
         {/* Chat Window */}
         <div
           ref={chatWindowRef}
-          className="flex-1 overflow-y-auto -28 p-4  space-y-4 bg-white bg-repeat bg-opacity-5"
+          className="flex-1 overflow-y-auto  p-4 h-screen space-y-4 bg-white dark:bg-gray-800 dark:bg-opacity-10 bg-repeat bg-opacity-5"
         >
           <AnimatePresence>
             {messages.map((msg, index) => (
@@ -241,15 +244,20 @@ export default function TravelChatPage(session: any) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className={`flex ${msg.senderId === session.session?.user?.id ? "justify-end" : "justify-start"}`}
+                className={`flex ${
+                  msg.senderId === session.session?.user?.id
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
               >
+                
                 <div
                   className={`max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-2xl p-3 ${
                     msg.senderId === session.session?.user?.id
-                      ? "bg-green-500 text-white"
-                      : "bg-white dark:bg-green-700 text-green-900 dark:text-green-100"
+                      ? "bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   } shadow-md`}
-                >
+                > 
                   <p>{msg.message}</p>
                   <div className="mt-2 text-xs opacity-70 text-right">
                     {formatTime(msg.time)}
@@ -259,7 +267,7 @@ export default function TravelChatPage(session: any) {
             ))}
           </AnimatePresence>
           {isTyping && (
-            <div className="flex items-center text-green-600 dark:text-green-300">
+            <div className="flex items-center text-gray-600 dark:text-gray-300">
               <div className="typing-indicator">
                 <span></span>
                 <span></span>
@@ -271,13 +279,13 @@ export default function TravelChatPage(session: any) {
         </div>
 
         {/* Message Input */}
-        <div className="bg-white dark:bg-green-800 p-4 shadow-lg transition-colors duration-300 border-t-2 border-green-200 dark:border-green-700">
+        <div className="bg-white dark:bg-gray-800 p-4 shadow-lg transition-colors duration-300 border-t-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
               aria-label="Open emoji picker"
             >
               <Smile className="h-5 w-5" />
@@ -285,7 +293,7 @@ export default function TravelChatPage(session: any) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
               aria-label="Attach image"
             >
               <ImageIcon className="h-5 w-5" />
@@ -293,7 +301,7 @@ export default function TravelChatPage(session: any) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
               aria-label="Attach file"
             >
               <Paperclip className="h-5 w-5" />
@@ -302,14 +310,14 @@ export default function TravelChatPage(session: any) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && sendMessage}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Ask your local guide..."
-              className="flex-1 border-green-200 dark:border-green-600 focus:ring-green-500 dark:focus:ring-green-400"
+              className="flex-1 border-gray-200 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
             <Button
               type="button"
               onClick={sendMessage}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               <Send className="h-5 w-5 mr-2" />
               <span className="hidden sm:inline">Send</span>
@@ -325,56 +333,10 @@ export default function TravelChatPage(session: any) {
             </div>
           )}
         </div>
-
-        {/* Floating Action Button for Mobile */}
-        {/* <Button
-          className="fixed bottom-4 right-4 rounded-full p-3 bg-green-500 hover:bg-green-600 text-white shadow-lg md:hidden"
-          onClick={() =>
-            chatWindowRef.current?.scrollTo(
-              0,
-              chatWindowRef.current.scrollHeight
-            )
-          }
-          aria-label="Scroll to bottom"
-        >
-          <ChevronDown className="h-6 w-6" />
-        </Button> */}
-
-        {/* <style jsx>{`
-          .typing-indicator {
-            display: flex;
-            align-items: center;
-          }
-          .typing-indicator span {
-            height: 8px;
-            width: 8px;
-            background-color: currentColor;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 4px;
-            animation: bounce 1.4s infinite ease-in-out both;
-          }
-          .typing-indicator span:nth-child(1) {
-            animation-delay: -0.32s;
-          }
-          .typing-indicator span:nth-child(2) {
-            animation-delay: -0.16s;
-          }
-          @keyframes bounce {
-            0%,
-            80%,
-            100% {
-              transform: scale(0);
-            }
-            40% {
-              transform: scale(1);
-            }
-          }
-        `}</style> */}
       </div>
       {!isSmallScreen ? (
         <motion.div
-          className="w-full sm:w-1/3  mt-16  bg-gray-50 border-l border-gray-200 p-4 flex flex-col space-y-16 sm:relative  sm:h-full sm:overflow-y-auto"
+          className="w-full sm:w-1/3 mt-16 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 p-4 flex flex-col space-y-16 sm:relative sm:h-full sm:overflow-y-auto"
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -386,7 +348,7 @@ export default function TravelChatPage(session: any) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <h1 className="text-2xl font-semibold "> Chat Options</h1>
+            <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Chat Options</h1>
           </motion.div>
 
           {/* Chat Actions */}
@@ -404,26 +366,30 @@ export default function TravelChatPage(session: any) {
             </button>
           </motion.div>
           <motion.div
-            className="space-y-2 mt-3 mb-3 "
+            className="space-y-2 mt-3 mb-3"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <div className="grid gap-2">
-              <Label className="text-xl" htmlFor="rating">
-                Rating
+              <Label className="text-xl text-gray-800 dark:text-gray-100" htmlFor="rating">
+          Rating
               </Label>
               <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => handleRatingChange(star)}
-                    className={`h-6 w-6 cursor-pointer text-gray-400 transition-colors duration-200 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 ${rating >= star ? "text-yellow-400  dark:text-yellow-300" : ""}`}
-                  >
-                    <StarIcon size={30} />
-                  </button>
-                ))}
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => handleRatingChange(star)}
+              className={`h-6 w-6 cursor-pointer text-gray-400 transition-colors duration-200 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 ${
+                rating >= star
+            ? "text-yellow-400 dark:text-yellow-300"
+            : ""
+              }`}
+            >
+              <StarIcon size={30} />
+            </button>
+          ))}
               </div>
             </div>
           </motion.div>
@@ -435,11 +401,11 @@ export default function TravelChatPage(session: any) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <h4 className="text-lg font-semibold text-gray-700 truncate">
+            <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-100 truncate">
               Your Notes
             </h4>
             <textarea
-              className="w-full h-32 border border-gray-300 rounded-md p-2 text-sm resize-none focus:ring-2 focus:ring-purple-600 focus:outline-none transition-shadow duration-300"
+              className="w-full h-32 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm resize-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:outline-none transition-shadow duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               placeholder="Add notes about this chat..."
             ></textarea>
           </motion.div>
@@ -462,7 +428,7 @@ export default function TravelChatPage(session: any) {
                 </Button>
               </DrawerTrigger>
               <DrawerContent>
-                <div className="mx-auto w-full max-w-sm ">
+                <div className="mx-auto w-full max-w-sm">
                   <DrawerHeader>
                     <DrawerTitle>Chat Options</DrawerTitle>
                   </DrawerHeader>
@@ -471,7 +437,7 @@ export default function TravelChatPage(session: any) {
                       initial={{ y: -20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.2 }}
-                      className="bg-gray-800 text-white p-4 rounded-lg shadow-md"
+                      className="bg-gray-800 text-white p-4  shadow-md"
                     >
                       <h2 className="text-xl font-bold mb-2">Chat Partner</h2>
                       <div className="flex items-center space-x-2">
@@ -512,9 +478,7 @@ export default function TravelChatPage(session: any) {
                             size={24}
                             onClick={() => setRating(star)}
                             className={`cursor-pointer transition-colors duration-200 ${
-                              star <= rating
-                                ? "text-yellow-400"
-                                : "text-gray-300"
+                              star <= rating ? "text-yellow-400" : "text-gray-300"
                             }`}
                           />
                         ))}
@@ -532,11 +496,11 @@ export default function TravelChatPage(session: any) {
                       <Textarea
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
-                        className="w-full p-2 border  border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                         placeholder="Your feedback here..."
                         rows={4}
                       />
-                      <Button className="w-full bg-black text-white hover:bg-gray-800 ">
+                      <Button className="w-full bg-black text-white hover:bg-gray-800">
                         <Send size={18} className="mr-2" />
                         Send Feedback
                       </Button>
@@ -553,6 +517,7 @@ export default function TravelChatPage(session: any) {
           )}
         </motion.div>
       )}
+    </div>
     </div>
   );
 }

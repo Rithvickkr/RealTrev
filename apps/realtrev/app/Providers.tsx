@@ -1,17 +1,19 @@
-"use client"
+"use client";
 import { SessionProvider } from "next-auth/react";
 
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
-        
+import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
+import { RecoilRoot } from "recoil";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-  return ( 
-    <PrimeReactProvider>
-  <SessionProvider>
-    <div>
-    {children}
-    </div>
-    </SessionProvider>
-    </PrimeReactProvider>
-    )
+  return (
+    
+      <PrimeReactProvider>
+        <RecoilRoot>
+        <SessionProvider>
+          <div>{children}</div>
+        </SessionProvider>
+        </RecoilRoot>
+      </PrimeReactProvider>
+    
+  );
 };

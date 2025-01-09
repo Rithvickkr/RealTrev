@@ -1,27 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Bell,
-  ChevronDown,
-  Home,
-  LogOut,
-  Moon,
-  Settings,
-  Sun,
-  User,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Bell,
+  Home,
+  LogOut,
+  Settings
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import getQuery from "../lib/actions/getquery";
 import setResponseQ from "../lib/actions/setresponseq";
 
@@ -180,21 +167,52 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
   return (
     <div className={`min-h-screen flex ${darkMode ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="bg-gray-100 dark:bg-gray-800 w-64 hidden md:flex flex-col">
+      <aside className="w-64 bg-white dark:bg-gray-800 shadow-md">
         <div className="p-4">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Travel Guide
-          </h2>
-        </div>
-        <nav className="flex-1 px-4 py-4">
-          <a
-            href="#"
-            className="flex items-center py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Home className="mr-3 h-5 w-5" />
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Dashboard
-          </a>
-        </nav>
+          </h2>
+          <nav className="mt-4">
+            <ul>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <Home className="w-5 h-5 mr-2" />
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <Bell className="w-5 h-5 mr-2" />
+                  Notifications
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  Settings
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <LogOut className="w-5 h-5 mr-2" />
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -204,6 +222,11 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Welcome, Local Guide!
             </h1>
+            <Switch
+              checked={darkMode}
+              onChange={() => setDarkMode(!darkMode)}
+              className="ml-4"
+            />
           </div>
         </header>
 
@@ -223,7 +246,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
               {queries.map((query) => (
                 <div
                   key={query.id}
-                  className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md"
+                  className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-transform transform hover:scale-105"
                 >
                   <div className="px-4 py-5 sm:px-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">

@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Modal from "./modal";
+import { fetchUpdates } from "../lib/actions/fetchupdates";
+import { useRecoilState } from "recoil";
+import { darkModeState } from "@/recoil/darkmodeatom";
+
+interface Update {
+  id: number;
+  coordinates: { coordinates: [number, number] };
+  description: string;
+}
 
 // Fix default marker icon issue in Leaflet
 L.Icon.Default.prototype.options.iconUrl =
@@ -14,11 +23,15 @@ L.Icon.Default.prototype.options.shadowUrl =
 
 const LiveMap = () => {
   const [userLocation, setUserLocation] = useState<[number, number]>([
-    51.505, -0.09,
-  ]); // Default to London
+    26.8467, 80.9462,
+  ]); // Default to Lucknow
   const [updates, setUpdates] = useState<
-    { id: number; location: [number, number]; message: string }[]
+    { id: number; location: [number, number]; description: string }[]
   >([]);
+
+  const mapRef = useRef(null);
+  const mapInstance = useRef<L.Map | null>(null);
+  const [darkMode] = useRecoilState(darkModeState);
 
   // Get user location
   useEffect(() => {
@@ -33,70 +46,75 @@ const LiveMap = () => {
     );
   }, []);
 
-  // Function to fetch updates (replace with Prisma integration)
-  const fetchUpdates = async () => {
-    try {
-      // Replace this mock data with your Prisma fetch logic
-      const prismaUpdates: {
-        id: number;
-        location: [number, number];
-        message: string;
-      }[] = [
-        {
-          id: 1,
-          location: [51.505, -0.09],
-          message: "Road closed due to flooding",
-        },
-        {
-          id: 2,
-          location: [51.51, -0.1],
-          message: "Traffic congestion reported",
-        },
-        {
-          id: 3,
-          location: [51.503, -0.08],
-          message: "Accident near this area",
-        },
-      ];
-      setUpdates(prismaUpdates);
-    } catch (error) {
-      console.error("Error fetching updates:", error);
+  useEffect(() => {
+    // Initialize the map
+    if (mapRef.current) {
+      mapInstance.current = L.map(mapRef.current, {
+        center: [userLocation[0], userLocation[1]], // Set the initial map center (latitude, longitude)
+        zoom: 13, // Set the zoom level
+      });
     }
+  }, []);
+
+  // Function to fetch updates (replace with Prisma integration)
+  const fetchUpdatesmain = async (): Promise<void> => {
+    const [latitude, longitude] = userLocation;
+    const updates = (await fetchUpdates({ latitude, longitude })) as Update[];
+    console.log(updates);
+    setUpdates(
+      updates.map(
+        (update: {
+          id: any;
+          coordinates: { coordinates: any };
+          description: any;
+        }) => ({
+          id: update.id,
+          location: update.coordinates.coordinates,
+          description: update.description,
+        })
+      )
+    );
   };
 
   // Initial fetch for updates
   useEffect(() => {
-    fetchUpdates();
+    fetchUpdatesmain();
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-screen  bg-gray-100">
-      <div className="  relative  z-50 w-full h-[80vh] rounded-lg overflow-hidden border shadow-lg mb-4 mt-4 ">
+    <div
+      className={`flex flex-col items-center justify-center w-full h-screen transition-colors duration-300  dark:bg-gray-900 text-gray-100 bg-sky-50 text-slate-900"}`}
+    >
+      <div className="relative z-50 w-full h-[80vh] rounded-lg overflow-hidden border shadow-lg mb-4 mt-4">
         <MapContainer center={userLocation} zoom={13} className="w-full h-full">
           {/* Tile Layer */}
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url={
+              darkMode
+                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            }
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           />
-
           {/* User Marker */}
           <Marker position={userLocation}>
             <Popup>
-              <b>Your Location</b>
+              <b>{userLocation}</b>
             </Popup>
           </Marker>
-
           {/* Live Updates Markers */}
           {updates.map((update) => (
-            <Marker key={update.id} position={update.location}>
+            <Marker
+              key={update.id}
+              position={[update.location[1], update.location[0]]}
+            >
               <Popup>
-                <b>Update:</b> {update.message}
+                <b>Update:</b> {update.description}
               </Popup>
             </Marker>
           ))}
         </MapContainer>
       </div>
-
       <div className="w-full max-w-3xl">
         <Modal />
       </div>

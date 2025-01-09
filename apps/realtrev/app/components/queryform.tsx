@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import submitQuery from "../lib/actions/querysubmit";
 import { useSession } from "next-auth/react";
+import TravelMinimalBackground from "./background";
 
 export default function EnhancedTravelerQuerySubmission() {
   const [location, setLocation] = useState("");
@@ -24,7 +25,7 @@ export default function EnhancedTravelerQuerySubmission() {
   const baseUrl = "https://api.opencagedata.com/geocode/v1/json";
   const Apikey = "37da08ae92ea44f386b963337c7b28b0";
   const Session = useSession();
-  console.log(Session)
+
   const handleLocationChange = async (e: { target: { value: any } }) => {
     const newLocation = e.target.value;
     setLocation(newLocation);
@@ -70,31 +71,26 @@ export default function EnhancedTravelerQuerySubmission() {
     locationName: string
   ): Promise<{ latitude: number; longitude: number }> {
     try {
-      // Make a GET request to the OpenCage API
       const response = await axios.get(baseUrl, {
         params: {
-          q: locationName, // The location name
-          key: Apikey, // API key
-          no_annotations: 1, // Exclude additional info
-          language: "en", // Language for the results
+          q: locationName,
+          key: Apikey,
+          no_annotations: 1,
+          language: "en",
         },
       });
 
       const results = response.data.results;
-      console.log(baseUrl);
-      console.log(Apikey);
-      console.log(results);
 
-      // Check if results exist
       if (results && results.length > 0) {
-        const { lat, lng } = results[0].geometry; // Extract latitude and longitude from the first result
-        return { latitude: lat, longitude: lng }; // Return coordinates
+        const { lat, lng } = results[0].geometry;
+        return { latitude: lat, longitude: lng };
       } else {
         throw new Error("Location not found");
       }
     } catch (error) {
       console.error("Error fetching location coordinates:", error);
-      throw error; // Rethrow error if something goes wrong
+      throw error;
     }
   }
 
@@ -106,10 +102,14 @@ export default function EnhancedTravelerQuerySubmission() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      await submitQuery((Session.data?.user as { id: string }).id, location, query, res.latitude, res.longitude);
+      await submitQuery(
+        (Session.data?.user as { id: string }).id,
+        location,
+        query,
+        res.latitude,
+        res.longitude
+      );
       setFeedback("Query submitted successfully! A local will respond soon.");
-     
-      console.log(res.latitude, res.longitude);
     } catch (error) {
       console.error("Error submitting query:", error);
       setFeedback(
@@ -121,123 +121,129 @@ export default function EnhancedTravelerQuerySubmission() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FEF3C7] p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl"
-      >
-        <Card className="backdrop-blur-sm bg-white/90 shadow-xl">
-          <CardContent className="p-6 sm:p-10">
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-3xl sm:text-4xl font-bold text-center text-[#1E40AF] mb-2"
-            >
-              Submit Your Query to Locals
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-center text-gray-600 mb-8"
-            >
-              Get real-time information from locals
-            </motion.p>
+    <div className="relative dark:bg-gray-900">
+      <TravelMinimalBackground />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Suggestion Section */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="location-search"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Search for a location
-                </label>
-                <div className="relative">
-                  <Input
-                    id="location-search"
-                    placeholder="Enter a location..."
-                    value={location}
-                    onChange={handleLocationChange}
-                    onFocus={() => location && setShowSuggestions(true)}
-                  />
-                  <Label>Locations</Label>
-
-                  {showSuggestions && (
-                    <ScrollArea ref={suggestionBoxRef}>
-                      <div className="border border-gray-200 rounded shadow-sm text-sm">
-                        {suggestions.length > 0 ? (
-                          suggestions.map((suggestion) => (
-                            <div
-                              className="p-2 hover:bg-gray-100 cursor-pointer"
-                              onClick={() => handleSuggestionClick(suggestion)}
-                              key={suggestion}
-                            >
-                              {suggestion}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-2 text-gray-500">
-                            No suggestions found
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="query"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Your Query
-                </label>
-                <Textarea
-                  id="query"
-                  placeholder="Type your question here…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="min-h-[100px]"
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white transition-all duration-200 ease-in-out transform hover:scale-105"
-                disabled={!location || !query || isSubmitting}
+      <div className="min-h-screen flex items-center justify-center bg-[#FEF3C7] dark:bg-gray-800 p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-4xl"
+        >
+          <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-700 shadow-xl">
+            <CardContent className="p-6 sm:p-10">
+              <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-3xl sm:text-4xl font-bold text-center text-black dark:text-white mb-2"
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting your query...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit Query
-                  </>
-                )}
-              </Button>
+                Submit Your Query to Locals
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-center text-gray-600 dark:text-gray-300 mb-8"
+              >
+                Get real-time information from locals
+              </motion.p>
 
-              {feedback && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-[#0D9488] font-medium"
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="location-search"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Search for a location
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="location-search"
+                      placeholder="Enter a location..."
+                      value={location}
+                      onChange={handleLocationChange}
+                      onFocus={() => location && setShowSuggestions(true)}
+                      className="dark:bg-gray-800 dark:text-white"
+                    />
+                    <Label className="dark:text-gray-300">Locations</Label>
+
+                    {showSuggestions && (
+                      <ScrollArea ref={suggestionBoxRef}>
+                        <div className="border border-gray-200 dark:border-gray-600 rounded shadow-sm text-sm dark:bg-gray-800 dark:text-white">
+                          {suggestions.length > 0 ? (
+                            suggestions.map((suggestion) => (
+                              <div
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                                onClick={() =>
+                                  handleSuggestionClick(suggestion)
+                                }
+                                key={suggestion}
+                              >
+                                {suggestion}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-2 text-gray-500 dark:text-gray-400">
+                              No suggestions found
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="query"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Your Query
+                  </label>
+                  <Textarea
+                    id="query"
+                    placeholder="Type your question here…"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="min-h-[100px] dark:bg-gray-800 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-black hover:bg-black text-white transition-all duration-200 ease-in-out transform hover:scale-105 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  disabled={!location || !query || isSubmitting}
                 >
-                  {feedback}
-                </motion.div>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting your query...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4 " />
+                      Submit Query
+                    </>
+                  )}
+                </Button>
+
+                {feedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center text-[#0D9488] font-medium dark:text-[#0D9488]"
+                  >
+                    {feedback}
+                  </motion.div>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }
