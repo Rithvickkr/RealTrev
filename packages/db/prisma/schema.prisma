@@ -1,3 +1,4 @@
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -20,6 +21,10 @@ model User {
   submittedQueries Query[]   @relation("Traveler")
   messages         Message[]
   updates          Updates[]
+  redemptions      Redemption[]
+  transactions     Transaction[]
+
+  trevCoins Int @default(0) // Balance of Trev Coins
 }
 
 model Message {
@@ -50,6 +55,7 @@ model Query {
   locationId  Int
   responderId String?
   queryText   String
+  stars       Int?
   status      QueryStatus @default(PENDING)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -76,6 +82,39 @@ model Updates {
   @@index([timestamp]) // Index on timestamp for efficient sorting by time
 }
 
+model Reward {
+  id          String   @id @default(uuid())
+  name        String   // Name of the reward
+  description String   // Description of the reward
+  cost        Int      // Cost in Trev Coins
+  quantity    Int      // Available quantity of the reward
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  redemptions Redemption[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  type        TransactionType
+  amount      Int      // Positive for earning, negative for spending
+  description String   // Reason for the transaction
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Redemption {
+  id          String   @id @default(uuid())
+  userId      String
+  rewardId    String
+  createdAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  reward Reward @relation(fields: [rewardId], references: [id])
+}
+
 enum QueryStatus {
   PENDING
   ACCEPTED
@@ -91,4 +130,10 @@ enum Severity {
   LOW
   MEDIUM
   HIGH
+}
+
+enum TransactionType {
+  EARNED
+  REDEEMED
+  BONUS
 }

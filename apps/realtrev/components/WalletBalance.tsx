@@ -5,10 +5,10 @@ import { CoinsIcon as Coin, Plane, TrendingUp, Award } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 
-export default function WalletBalance() {
+export default function WalletBalance(trevcoins: any) {
   const [balance, setBalance] = useState(0)
   const [planePosition, setPlanePosition] = useState(0)
-  const targetBalance = 1000 // Replace with actual balance from API
+  const targetBalance = trevcoins // Replace with actual balance from API
 
   useEffect(() => {
     const balanceTimer = setInterval(() => {

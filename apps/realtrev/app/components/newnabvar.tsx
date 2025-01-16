@@ -39,6 +39,7 @@ import changerole from "../lib/actions/changerole";
 import { usePathname } from "next/navigation";
 import { useRecoilState } from "recoil";
 import { darkModeState } from "@/recoil/darkmodeatom";
+import { useRouter } from "next/navigation";
 
 interface NavbarItemProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -65,6 +66,7 @@ export default function Navbar() {
   );
   const pathname = usePathname();
   const [darkMode, setDarkMode] = useRecoilState(darkModeState);
+  const Router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -196,6 +198,7 @@ export default function Navbar() {
           <Button
             variant="outline"
             className="hidden md:flex items-center space-x-1 bg-background hover:bg-accent dark:bg-background-dark dark:hover:bg-accent-dark"
+            onClick={() => Router.push("/trevwallet")}
           >
             <Gift className="w-4 h-4" />
             <span>Trev Wallet</span>
@@ -274,6 +277,7 @@ export default function Navbar() {
                   <Button
                     variant="outline"
                     className="w-full flex items-center justify-center space-x-2 dark:bg-background-dark dark:text-foreground-dark"
+                    onClick={() => Router.push("/trevwallet")}
                   >
                     <Gift className="w-4 h-4" />
                     <span>Trev Wallet</span>
