@@ -8,6 +8,7 @@ import QRCodeGenerator from "@/components/QRCodeGenerator";
 import { authOptions } from "@/app/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { getUserDetails } from "@/app/lib/actions/aboutuser";
+import TravelMinimalBackground from "@/app/components/background";
 
 export default async function WalletPage() {
   const session = await getServerSession(authOptions);
@@ -15,11 +16,13 @@ export default async function WalletPage() {
   
 
   return (
+    <div>
+      <TravelMinimalBackground />
     <div className="min-h-screen bg-background text-foreground">
       <main className="container mx-auto  px-4 py-8">
         <div className="space-y-8 pt-10">
           <WalletBalance trevcoins={user?.trevCoins} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className=" relative grid grid-cols-1 lg:grid-cols-2 gap-8">
             <TransactionHistory transactions={user?.transactions.map(transaction => ({
               ...transaction,
               date: transaction.createdAt.toISOString()
@@ -31,6 +34,7 @@ export default async function WalletPage() {
           </div>
         </div>
       </main>
+    </div>
     </div>
   );
 }

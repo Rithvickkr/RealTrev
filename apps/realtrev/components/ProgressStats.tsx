@@ -13,7 +13,7 @@ export default function ProgressStats() {
             <span className="text-sm font-medium">Coins Earned This Month</span>
             <span className="text-sm font-medium">750/1000</span>
           </div>
-          <Progress value={75} className="h-2" />
+          <Progress value={75} className="h-2 bg-black" />
         </div>
         <div>
           <div className="flex justify-between mb-1">
