@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@repo/db/client";
+
 const haversineDistance = (
   lat1: number,
   lon1: number,
@@ -24,10 +25,9 @@ const haversineDistance = (
 export default async function getQuery(
   lat: number,
   lon: number,
-  radius: number
+  radius: number,
+  userId: string
 ) {
-  console.error("result.length");
-
   // Make sure latitude and longitude are present
   if (!lat || !lon) {
     console.error("errr");
@@ -50,15 +50,17 @@ export default async function getQuery(
       location.latitude,
       location.longitude
     );
-    console.error("reached");
     return distance <= radiusKm; // Keep locations within the radius
   });
 
-  // Fetch queries for the nearby locations
+  // Fetch queries for the nearby locations, excluding those submitted by the user
   const nearbyQueries = await prisma.query.findMany({
     where: {
       locationId: {
         in: nearbyLocations.map((location) => location.id),
+      },
+      travelerId: {
+        not: userId,
       },
     },
     include: {
@@ -66,7 +68,7 @@ export default async function getQuery(
       traveler: true,
     },
   });
-     
+
   // Calculate and add the distance for each query location
   const result = nearbyQueries.map((query) => {
     const location = query.location;
@@ -78,6 +80,7 @@ export default async function getQuery(
     );
     return { ...query, distance }; // Add distance to each query object
   });
+
   console.error(result.length);
   return result; // Return the filtered queries
 }

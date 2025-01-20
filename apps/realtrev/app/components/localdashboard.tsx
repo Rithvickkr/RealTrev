@@ -1,16 +1,12 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
-import {
-  Bell,
-  Home,
-  LogOut,
-  Settings
-} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import getQuery from "../lib/actions/getquery";
 import setResponseQ from "../lib/actions/setresponseq";
+import getUserAcceptedAndResolvedQueries from "../lib/actions/useraccptedquery";
 
 type Query = {
   id: string;
@@ -19,42 +15,27 @@ type Query = {
   location: string;
   queryLocation: string;
   traveler: { name?: string } | null;
+  status: "Pending" | "Resolved" | "Accepted";
+  userId?: string | null;
 };
 
 export default function LocalGuideDashboard({ session }: { session: any }) {
   const [darkMode, setDarkMode] = useState(false);
   const [queries, setQueries] = useState<Query[]>([]);
+  const [resolvedQueries, setResolvedQueries] = useState<Query[]>([]);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [cityName, setCityName] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [view, setView] = useState<"nearby" | "accepted" | "resolved">(
+    "nearby"
+  );
   const baseUrl = "https://api.opencagedata.com/geocode/v1/json";
   const ApiKey = process.env.API_KEY || "";
 
   const router = useRouter();
-
-  // Haversine formula to calculate distance
-  const haversineDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -82,17 +63,16 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
           const fetchedQueries = await getQuery(
             userLocation.latitude,
             userLocation.longitude,
-            10
+            10,
+            session.user.id
           );
+          const fetchedAcceptedQueries =
+            await getUserAcceptedAndResolvedQueries(session.user.id);
 
           if (Array.isArray(fetchedQueries)) {
             const mappedQueries: Query[] = fetchedQueries
               .filter(
-                (query) =>
-                  query &&
-                  query.id &&
-                  query.location &&
-                  query.traveler // Ensure valid data
+                (query) => query && query.id && query.location && query.traveler
               )
               .map((query) => ({
                 id: query.id,
@@ -103,9 +83,38 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                   query.location.longitude || 0
                 }`,
                 traveler: query.traveler,
+                status:
+                  query.status === "PENDING"
+                    ? "Pending"
+                    : query.status === "ACCEPTED"
+                    ? "Accepted"
+                    : "Resolved",
+                userId: query.responderId,
               }));
 
             setQueries(mappedQueries);
+            const mappedAcceptedQueries: Query[] = fetchedAcceptedQueries.map(
+              (query) => ({
+                id: query.id,
+                travelerId: query.travelerId || "Unknown",
+                question: query.queryText || "No question provided",
+                location: query.location.name || "Unknown Location",
+                queryLocation: `${query.location.latitude || 0}, ${
+                  query.location.longitude || 0
+                }`,
+                traveler: query.traveler,
+                status:
+                  query.status === "PENDING"
+                    ? "Pending"
+                    : query.status === "ACCEPTED"
+                    ? "Accepted"
+                    : "Resolved",
+                userId: query.responderId,
+              })
+            );
+            setResolvedQueries(mappedAcceptedQueries);
+            console.log(mappedAcceptedQueries);
+            console.log(mappedQueries);
           } else {
             console.error("Invalid data format from getQuery:", fetchedQueries);
           }
@@ -151,7 +160,11 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
       if (isAccepted) {
         alert("Query accepted successfully!");
         setQueries((prevQueries) =>
-          prevQueries.filter((query) => query.id !== id)
+          prevQueries.map((query) =>
+            query.id === id
+              ? { ...query, status: "Accepted", userId: session.user.id }
+              : query
+          )
         );
         router.push(`/chatpage/${id}`);
       }
@@ -164,59 +177,53 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
     setQueries((prevQueries) => prevQueries.filter((query) => query.id !== id));
   };
 
+  const filteredQueries =
+    view === "nearby"
+      ? queries.filter((query) => query.status === "Pending")
+      : view === "accepted"
+      ? resolvedQueries.filter((query) => query.status === "Accepted")
+      : resolvedQueries.filter((query) => query.status === "Resolved");
+
   return (
-    <div className={`min-h-screen flex ${darkMode ? "dark" : ""}`}>
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 shadow-md">
+    <div className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "dark" : ""}`}>
+      <motion.aside
+        initial={{ x: -250 }}
+        animate={{ x: 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="w-full md:w-64 bg-gray-800 text-white"
+      >
         <div className="p-4">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Dashboard
-          </h2>
-          <nav className="mt-4">
+          <nav className="mt-10">
             <ul>
               <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                <button
+                  onClick={() => setView("nearby")}
+                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
                 >
-                  <Home className="w-5 h-5 mr-2" />
-                  Home
-                </a>
+                  Nearby Queries
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                <button
+                  onClick={() => setView("accepted")}
+                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
                 >
-                  <Bell className="w-5 h-5 mr-2" />
-                  Notifications
-                </a>
+                  Accepted Queries
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                <button
+                  onClick={() => setView("resolved")}
+                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
                 >
-                  <Settings className="w-5 h-5 mr-2" />
-                  Settings
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
-                >
-                  <LogOut className="w-5 h-5 mr-2" />
-                  Logout
-                </a>
+                  Resolved Queries
+                </button>
               </li>
             </ul>
           </nav>
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      </motion.aside>
+      <div className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-900 shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -243,9 +250,12 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                 : "Fetching your location..."}
             </p>
             <div className="space-y-4">
-              {queries.map((query) => (
-                <div
+              {filteredQueries.map((query) => (
+                <motion.div
                   key={query.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                   className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-transform transform hover:scale-105"
                 >
                   <div className="px-4 py-5 sm:px-6">
@@ -258,22 +268,42 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Location: {query.location}
                     </p>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      Status: {query.status}
+                    </p>
+                    {query.status === "Resolved" && (
+                      <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                        RESOLVED
+                      </span>
+                    )}
                   </div>
                   <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between">
-                    <button
-                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
-                      onClick={() => handleAccept(query.id)}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500"
-                      onClick={() => handleReject(query.id)}
-                    >
-                      Reject
-                    </button>
+                    {query.status === "Pending" && (
+                      <>
+                        <button
+                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
+                          onClick={() => handleAccept(query.id)}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500"
+                          onClick={() => handleReject(query.id)}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                    {query.status === "Accepted" && (
+                      <button
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
+                        onClick={() => router.push(`/chatpage/${query.id}`)}
+                      >
+                        Open Chat
+                      </button>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

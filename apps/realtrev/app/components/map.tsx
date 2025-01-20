@@ -46,21 +46,23 @@ const LiveMap = () => {
     );
   }, []);
 
-  useEffect(() => {
-    // Initialize the map
-    if (mapRef.current) {
-      mapInstance.current = L.map(mapRef.current, {
-        center: [userLocation[0], userLocation[1]], // Set the initial map center (latitude, longitude)
-        zoom: 13, // Set the zoom level
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Initialize the map
+  //   if (mapRef.current) {
+  //     mapInstance.current = L.map(mapRef.current, {
+  //       center: [userLocation[0], userLocation[1]], // Set the initial map center (latitude, longitude)
+  //       zoom: 13, // Set the zoom level
+       
+  //     });
+  //     alert
+  //   }
+  // }, []);
 
   // Function to fetch updates (replace with Prisma integration)
   const fetchUpdatesmain = async (): Promise<void> => {
     const [latitude, longitude] = userLocation;
     const updates = (await fetchUpdates({ latitude, longitude })) as Update[];
-    console.log(updates);
+    
     setUpdates(
       updates.map(
         (update: {
@@ -79,13 +81,13 @@ const LiveMap = () => {
   // Initial fetch for updates
   useEffect(() => {
     fetchUpdatesmain();
-  }, []);
+  }, [userLocation]);
 
   return (
     <div
       className={`flex flex-col items-center justify-center w-full h-screen transition-colors duration-300  dark:bg-gray-900 text-gray-100 bg-sky-50 text-slate-900"}`}
     >
-      <div className="relative z-50 w-full h-[80vh] rounded-lg overflow-hidden border shadow-lg mb-4 mt-4">
+      <div className="relative z-40 w-full h-[80vh] rounded-lg overflow-hidden border shadow-lg mb-4 mt-4">
         <MapContainer center={userLocation} zoom={13} className="w-full h-full">
           {/* Tile Layer */}
           <TileLayer
@@ -97,22 +99,25 @@ const LiveMap = () => {
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           />
           {/* User Marker */}
-          <Marker position={userLocation}>
+          {/* <Marker position={userLocation}>
             <Popup>
               <b>{userLocation}</b>
             </Popup>
-          </Marker>
+          </Marker> */}
           {/* Live Updates Markers */}
-          {updates.map((update) => (
+            {updates.map((update, index) => (
             <Marker
-              key={update.id}
-              position={[update.location[1], update.location[0]]}
+              key={`${update.id}-${index}`}
+              position={[
+              update.location[1] + index * 0.0001, // Slightly offset each marker
+              update.location[0] + index * 0.0001,
+              ]}
             >
               <Popup>
-                <b>Update:</b> {update.description}
+              <b>Update {index + 1}:</b> {update.description}
               </Popup>
             </Marker>
-          ))}
+            ))}
         </MapContainer>
       </div>
       <div className="w-full max-w-3xl">

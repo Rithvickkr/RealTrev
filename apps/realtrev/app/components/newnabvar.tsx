@@ -156,10 +156,10 @@ export default function Navbar() {
                 My Account
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="dark:bg-border-dark" />
-              <DropdownMenuItem className="dark:text-foreground-dark"></DropdownMenuItem>
+              <DropdownMenuItem className="dark:text-foreground-dark">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
-
+               </DropdownMenuItem>
               <DropdownMenuItem className="dark:text-foreground-dark">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
@@ -169,9 +169,13 @@ export default function Navbar() {
                 <div className="flex items-center justify-between w-full">
                   <span>Switch to {isGuide ? "Traveler" : "Guide"}</span>
                   <Switch
-                    checked={isGuide}
-                    onCheckedChange={changeRole}
-                    className="data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary-dark"
+                  checked={isGuide}
+                  onCheckedChange={changeRole}
+                  className={`ml-2 ${
+                    isGuide
+                    ? "data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary-dark"
+                    : "data-[state=unchecked]:bg-secondary dark:data-[state=unchecked]:bg-secondary-dark"
+                  }`}
                   />
                 </div>
               </DropdownMenuItem>
