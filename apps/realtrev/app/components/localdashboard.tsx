@@ -1,12 +1,14 @@
 "use client";
 
-import { Switch } from "@/components/ui/switch";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import getQuery from "../lib/actions/getquery";
 import setResponseQ from "../lib/actions/setresponseq";
 import getUserAcceptedAndResolvedQueries from "../lib/actions/useraccptedquery";
+
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { useMediaQuery } from "react-responsive";
 
 type Query = {
   id: string;
@@ -36,6 +38,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
   const ApiKey = process.env.API_KEY || "";
 
   const router = useRouter();
+  const isSmallScreen = useMediaQuery({ maxWidth: 768 });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -87,8 +90,8 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                   query.status === "PENDING"
                     ? "Pending"
                     : query.status === "ACCEPTED"
-                    ? "Accepted"
-                    : "Resolved",
+                      ? "Accepted"
+                      : "Resolved",
                 userId: query.responderId,
               }));
 
@@ -107,8 +110,8 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                   query.status === "PENDING"
                     ? "Pending"
                     : query.status === "ACCEPTED"
-                    ? "Accepted"
-                    : "Resolved",
+                      ? "Accepted"
+                      : "Resolved",
                 userId: query.responderId,
               })
             );
@@ -181,59 +184,117 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
     view === "nearby"
       ? queries.filter((query) => query.status === "Pending")
       : view === "accepted"
-      ? resolvedQueries.filter((query) => query.status === "Accepted")
-      : resolvedQueries.filter((query) => query.status === "Resolved");
+        ? resolvedQueries.filter((query) => query.status === "Accepted")
+        : resolvedQueries.filter((query) => query.status === "Resolved");
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "dark" : ""}`}>
-      <motion.aside
-        initial={{ x: -250 }}
-        animate={{ x: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        className="w-full md:w-64 bg-gray-800 text-white"
-      >
-        <div className="p-4">
-          <nav className="mt-10">
-            <ul>
-              <li>
-                <button
-                  onClick={() => setView("nearby")}
-                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
-                >
-                  Nearby Queries
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setView("accepted")}
-                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
-                >
-                  Accepted Queries
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setView("resolved")}
-                  className="block py-2 px-4 hover:bg-gray-700 w-full text-left"
-                >
-                  Resolved Queries
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </motion.aside>
+    <div
+      className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "dark" : ""}`}
+    >
+      {!isSmallScreen && (
+        <motion.aside
+          initial={{ x: -250 }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 100 }}
+          className="w-full md:w-64 bg-gray-800 text-white"
+        >
+          <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
+            <nav className="mt-10">
+              <ul className="space-y-2">
+                <li>
+                  <button
+                    onClick={() => setView("nearby")}
+                    className={`block py-2 px-4 rounded-md w-full text-left ${
+                      view === "nearby" ? "bg-gray-700" : "hover:bg-gray-700"
+                    }`}
+                  >
+                    Nearby Queries
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setView("accepted")}
+                    className={`block py-2 px-4 rounded-md w-full text-left ${
+                      view === "accepted" ? "bg-gray-700" : "hover:bg-gray-700"
+                    }`}
+                  >
+                    Accepted Queries
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setView("resolved")}
+                    className={`block py-2 px-4 rounded-md w-full text-left ${
+                      view === "resolved" ? "bg-gray-700" : "hover:bg-gray-700"
+                    }`}
+                  >
+                    Resolved Queries
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </motion.aside>
+      )}
       <div className="flex-1 flex flex-col">
-        <header className="bg-white dark:bg-gray-900 shadow-sm">
+        <header className="bg-white dark:bg-gray-900 shadow-sm  mt-10">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-10">
               Welcome, Local Guide!
             </h1>
-            <Switch
-              checked={darkMode}
-              onChange={() => setDarkMode(!darkMode)}
-              className="ml-4"
-            />
+            {isSmallScreen && (
+              <Sheet>
+                <SheetTrigger>
+                  <button className=" bg-gray-800 text-white">Open Menu</button>
+                </SheetTrigger>
+                <SheetContent>
+                  <div className="p-4">
+                    <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
+                    <nav className="mt-10">
+                      <ul className="space-y-2">
+                        <li>
+                          <button
+                            onClick={() => setView("nearby")}
+                            className={`block py-2 px-4 rounded-md w-full text-left ${
+                              view === "nearby"
+                                ? "bg-gray-700"
+                                : "hover:bg-gray-700"
+                            }`}
+                          >
+                            Nearby Queries
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => setView("accepted")}
+                            className={`block py-2 px-4 rounded-md w-full text-left ${
+                              view === "accepted"
+                                ? "bg-gray-700"
+                                : "hover:bg-gray-700"
+                            }`}
+                          >
+                            Accepted Queries
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => setView("resolved")}
+                            className={`block py-2 px-4 rounded-md w-full text-left ${
+                              view === "resolved"
+                                ? "bg-gray-700"
+                                : "hover:bg-gray-700"
+                            }`}
+                          >
+                            Resolved Queries
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
           </div>
         </header>
 
@@ -246,8 +307,8 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
               {locationError
                 ? locationError
                 : cityName
-                ? `Your location: ${cityName}`
-                : "Fetching your location..."}
+                  ? `Your location: ${cityName}`
+                  : "Fetching your location..."}
             </p>
             <div className="space-y-4">
               {filteredQueries.map((query) => (
