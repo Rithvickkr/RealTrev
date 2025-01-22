@@ -173,35 +173,6 @@ export default function Component() {
       {/* Featured Local Experts and Testimonials */}
       <section className=" relative z-10 py-16 bg-slate-100 bg-opacity-50  ">
         <div className="container mx-auto px-4">
-          {/* <h2 className="text-3xl font-bold text-center mb-12">
-            Featured Local Experts
-          </h2>
-          <div className="flex overflow-x-auto pb-8 space-x-6">
-            <LocalExpertCard
-              name="John Doe"
-              expertise="City Explorer"
-              rating={4}
-              image="/placeholder.svg?height=200&width=200"
-            />
-            <LocalExpertCard
-              name="Jane Smith"
-              expertise="Food Connoisseur"
-              rating={5}
-              image="/placeholder.svg?height=200&width=200"
-            />
-            <LocalExpertCard
-              name="Mike Johnson"
-              expertise="Adventure Guide"
-              rating={4}
-              image="/placeholder.svg?height=200&width=200"
-            />
-            <LocalExpertCard
-              name="Emily Brown"
-              expertise="Cultural Expert"
-              rating={5}
-              image="/placeholder.svg?height=200&width=200"
-            />
-          </div> */}
           <h2 className="text-3xl font-bold text-center my-12">
             Traveler Testimonials
           </h2>

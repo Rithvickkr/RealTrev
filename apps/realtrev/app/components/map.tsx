@@ -6,6 +6,7 @@ import Modal from "./modal";
 import { fetchUpdates } from "../lib/actions/fetchupdates";
 import { useRecoilState } from "recoil";
 import { darkModeState } from "@/recoil/darkmodeatom";
+import { Button } from "@/components/ui/button";
 
 interface Update {
   id: number;
@@ -21,7 +22,7 @@ L.Icon.Default.prototype.options.iconRetinaUrl =
 L.Icon.Default.prototype.options.shadowUrl =
   "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png";
 
-const LiveMap = () => {
+const LiveMap = (udpatelocation: any) => {
   const [userLocation, setUserLocation] = useState<[number, number]>([
     26.8467, 80.9462,
   ]); // Default to Lucknow
@@ -29,7 +30,7 @@ const LiveMap = () => {
     { id: number; location: [number, number]; description: string }[]
   >([]);
 
-  const mapRef = useRef(null);
+  // const mapRef = useRef(null);
   const mapInstance = useRef<L.Map | null>(null);
   const [darkMode] = useRecoilState(darkModeState);
 
@@ -46,23 +47,11 @@ const LiveMap = () => {
     );
   }, []);
 
-  // useEffect(() => {
-  //   // Initialize the map
-  //   if (mapRef.current) {
-  //     mapInstance.current = L.map(mapRef.current, {
-  //       center: [userLocation[0], userLocation[1]], // Set the initial map center (latitude, longitude)
-  //       zoom: 13, // Set the zoom level
-       
-  //     });
-  //     alert
-  //   }
-  // }, []);
-
   // Function to fetch updates (replace with Prisma integration)
   const fetchUpdatesmain = async (): Promise<void> => {
     const [latitude, longitude] = userLocation;
     const updates = (await fetchUpdates({ latitude, longitude })) as Update[];
-    
+
     setUpdates(
       updates.map(
         (update: {
@@ -83,12 +72,48 @@ const LiveMap = () => {
     fetchUpdatesmain();
   }, [userLocation]);
 
+  // Function to pan map to user location
+  const panToUserLocation = () => {
+    if (mapInstance.current) {
+      mapInstance.current.flyTo(userLocation, 14, {
+        animate: true,
+        duration: 1.5, // Duration of the animation in seconds
+      });
+      console.log("Panned to user location with animation");
+    } else {
+      console.log("Map instance not available", mapInstance.current);
+    }
+  };
+  useEffect(() => {
+    panToUserLocation();
+  }, [userLocation]);
+
+  const panToQuery = (query: string): void => {
+    if (mapInstance.current) {
+      mapInstance.current.flyTo([26.8467, 80.9462], 14, {
+        animate: true,
+        duration: 1.5, // Duration of the animation in seconds
+      });
+      console.log("Panned to user location with animation");
+    } else {
+      console.log("Map instance not available", mapInstance.current);
+    }
+  };
+
   return (
     <div
       className={`flex flex-col items-center justify-center w-full h-screen transition-colors duration-300  dark:bg-gray-900 text-gray-100 bg-sky-50 text-slate-900"}`}
     >
       <div className="relative z-40 w-full h-[80vh] rounded-lg overflow-hidden border shadow-lg mb-4 mt-4">
-        <MapContainer center={userLocation} zoom={13} className="w-full h-full">
+        <MapContainer
+          center={userLocation}
+          zoom={13}
+          className="w-full h-full"
+          whenReady={(event: any) => {
+            const map = event.target as L.Map;
+            mapInstance.current = map;
+          }}
+        >
           {/* Tile Layer */}
           <TileLayer
             url={
@@ -105,21 +130,27 @@ const LiveMap = () => {
             </Popup>
           </Marker> */}
           {/* Live Updates Markers */}
-            {updates.map((update, index) => (
+          {updates.map((update, index) => (
             <Marker
               key={`${update.id}-${index}`}
               position={[
-              update.location[1] + index * 0.0001, // Slightly offset each marker
-              update.location[0] + index * 0.0001,
+                update.location[1] + index * 0.0001, // Slightly offset each marker
+                update.location[0] + index * 0.0001,
               ]}
             >
               <Popup>
-              <b>Update {index + 1}:</b> {update.description}
+                <b>Update {index + 1}:</b> {update.description}
               </Popup>
             </Marker>
-            ))}
+          ))}
         </MapContainer>
       </div>
+      <Button
+        onClick={panToUserLocation}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Go to My Location
+      </Button>
       <div className="w-full max-w-3xl">
         <Modal />
       </div>

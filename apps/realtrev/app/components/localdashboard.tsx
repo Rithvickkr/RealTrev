@@ -6,9 +6,12 @@ import { useEffect, useState } from "react";
 import getQuery from "../lib/actions/getquery";
 import setResponseQ from "../lib/actions/setresponseq";
 import getUserAcceptedAndResolvedQueries from "../lib/actions/useraccptedquery";
-
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { useMediaQuery } from "react-responsive";
+import { Button } from "@/components/ui/button";
+import { LucideMenu } from "lucide-react";
+import { ProgressSpinner } from "primereact/progressspinner";
+import TravelMinimalBackground from "./background";
 
 type Query = {
   id: string;
@@ -34,6 +37,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
   const [view, setView] = useState<"nearby" | "accepted" | "resolved">(
     "nearby"
   );
+  const [loading, setLoading] = useState(true); // Add loading state
   const baseUrl = "https://api.opencagedata.com/geocode/v1/json";
   const ApiKey = process.env.API_KEY || "";
 
@@ -62,6 +66,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
   useEffect(() => {
     if (userLocation?.latitude && userLocation?.longitude) {
       const fetchData = async () => {
+        setLoading(true); 
         try {
           const fetchedQueries = await getQuery(
             userLocation.latitude,
@@ -123,12 +128,16 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
           }
         } catch (error) {
           console.error("Error fetching queries:", error);
+        } finally {
+          setLoading(false); 
         }
       };
 
       fetchData();
     }
   }, [userLocation]);
+  
+  
 
   const fetchCityName = async (latitude: number, longitude: number) => {
     const API_KEY = "37da08ae92ea44f386b963337c7b28b0"; // Replace with your OpenCage API key
@@ -189,14 +198,14 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
 
   return (
     <div
-      className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "dark" : ""}`}
+      className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "dark: dark:bg-gray-900 dark:text-gray-100" : ""}`}
     >
       {!isSmallScreen && (
         <motion.aside
           initial={{ x: -250 }}
           animate={{ x: 0 }}
           transition={{ type: "spring", stiffness: 100 }}
-          className="w-full md:w-64 bg-gray-800 text-white"
+          className="w-full md:w-64 bg-gray-800 text-white dark:bg-gray-900 dark:text-gray-100"
         >
           <div className="p-4">
             <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
@@ -237,69 +246,74 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
           </div>
         </motion.aside>
       )}
-      <div className="flex-1 flex flex-col">
+      <div className="  flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-900 shadow-sm  mt-10">
-          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-10">
-              Welcome, Local Guide!
-            </h1>
-            {isSmallScreen && (
-              <Sheet>
-                <SheetTrigger>
-                  <button className=" bg-gray-800 text-white">Open Menu</button>
-                </SheetTrigger>
-                <SheetContent>
-                  <div className="p-4">
-                    <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
-                    <nav className="mt-10">
-                      <ul className="space-y-2">
-                        <li>
-                          <button
-                            onClick={() => setView("nearby")}
-                            className={`block py-2 px-4 rounded-md w-full text-left ${
-                              view === "nearby"
-                                ? "bg-gray-700"
-                                : "hover:bg-gray-700"
-                            }`}
-                          >
-                            Nearby Queries
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            onClick={() => setView("accepted")}
-                            className={`block py-2 px-4 rounded-md w-full text-left ${
-                              view === "accepted"
-                                ? "bg-gray-700"
-                                : "hover:bg-gray-700"
-                            }`}
-                          >
-                            Accepted Queries
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            onClick={() => setView("resolved")}
-                            className={`block py-2 px-4 rounded-md w-full text-left ${
-                              view === "resolved"
-                                ? "bg-gray-700"
-                                : "hover:bg-gray-700"
-                            }`}
-                          >
-                            Resolved Queries
-                          </button>
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </div>
+          <TravelMinimalBackground />
         </header>
+        <div className=" relative max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-center items-center space-x-5">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-10">
+            Welcome,{session.user.name}!
+          </h1>
+          {isSmallScreen && (
+            <Sheet>
+              <SheetTrigger>
+                <Button
+                  className={`bg-gray-800 text-white mt-10 ${isSmallScreen ? "text-sm py-2 px-4" : "text-lg py-3 px-6"}`}
+                >
+                  <LucideMenu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side={"left"}>
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
+                  <nav className="mt-10">
+                    <ul className="space-y-2">
+                      <li>
+                        <button
+                          onClick={() => setView("nearby")}
+                          className={`block py-2 px-4 rounded-md w-full text-left ${
+                            view === "nearby"
+                              ? "bg-gray-700"
+                              : "hover:bg-gray-700"
+                          }`}
+                        >
+                          Nearby Queries
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => setView("accepted")}
+                          className={`block py-2 px-4 rounded-md w-full text-left ${
+                            view === "accepted"
+                              ? "bg-gray-700"
+                              : "hover:bg-gray-700"
+                          }`}
+                        >
+                          Accepted Queries
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => setView("resolved")}
+                          className={`block py-2 px-4 rounded-md w-full text-left ${
+                            view === "resolved"
+                              ? "bg-gray-700"
+                              : "hover:bg-gray-700"
+                          }`}
+                        >
+                          Resolved Queries
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
 
-        <main className="flex-1 bg-gray-100 dark:bg-gray-900">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <main className="  flex-1 bg-gray-100 dark:bg-gray-900">
+          <div className="   relative max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
               Location-Based Queries
             </h2>
@@ -310,63 +324,75 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                   ? `Your location: ${cityName}`
                   : "Fetching your location..."}
             </p>
-            <div className="space-y-4">
-              {filteredQueries.map((query) => (
-                <motion.div
-                  key={query.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-transform transform hover:scale-105"
-                >
-                  <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                      {query.traveler?.name || "Traveler"}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      {query.question}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      Location: {query.location}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      Status: {query.status}
-                    </p>
-                    {query.status === "Resolved" && (
-                      <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                        RESOLVED
-                      </span>
-                    )}
-                  </div>
-                  <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between">
-                    {query.status === "Pending" && (
-                      <>
-                        <button
-                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
-                          onClick={() => handleAccept(query.id)}
-                        >
-                          Accept
-                        </button>
-                        <button
-                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500"
-                          onClick={() => handleReject(query.id)}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                    {query.status === "Accepted" && (
-                      <button
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
-                        onClick={() => router.push(`/chatpage/${query.id}`)}
-                      >
-                        Open Chat
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center size-auto ">
+                   <ProgressSpinner />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredQueries.length === 0 ? (
+                  <p className="text-gray-700 dark:text-gray-300">
+                    No queries available right now.
+                  </p>
+                ) : (
+                  filteredQueries.map((query) => (
+                    <motion.div
+                      key={query.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-transform transform hover:scale-105"
+                    >
+                      <div className="px-4 py-5 sm:px-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                          {query.traveler?.name || "Traveler"}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          {query.question}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          Location: {query.location}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          Status: {query.status}
+                        </p>
+                        {query.status === "Resolved" && (
+                          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            RESOLVED
+                          </span>
+                        )}
+                      </div>
+                      <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700 flex justify-between">
+                        {query.status === "Pending" && (
+                          <>
+                            <button
+                              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
+                              onClick={() => handleAccept(query.id)}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500"
+                              onClick={() => handleReject(query.id)}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {query.status === "Accepted" && (
+                          <button
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-500"
+                            onClick={() => router.push(`/chatpage/${query.id}`)}
+                          >
+                            Open Chat
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { animated, config, useSpring } from "@react-spring/web";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import TravelMinimalBackground from "@/app/components/background";
 import LiveMap from "@/app/components/map";
@@ -44,6 +44,7 @@ import {
 import { useSession } from "next-auth/react";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useRecoilState } from "recoil";
+
 export default function ExplorePage() {
   const [activeUpdate, setActiveUpdate] = useState<Update | null>(null);
   const [isLive, setIsLive] = useState(true);
@@ -58,6 +59,8 @@ export default function ExplorePage() {
   const { data: session } = useSession();
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const mapInstance = useRef<any>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -73,6 +76,7 @@ export default function ExplorePage() {
 
   useEffect(() => {
     const fetchAndSetUpdates = async () => {
+      setLoading(true);
       const [latitude, longitude] = userLocation;
       const updates = await fetchUpdates({ latitude, longitude });
       setUpdates(updates as Update[]);
@@ -87,6 +91,7 @@ export default function ExplorePage() {
           )
         );
       }
+      setLoading(false);
       console.log(updates);
     };
     fetchAndSetUpdates();
@@ -107,8 +112,8 @@ export default function ExplorePage() {
         ? "100%"
         : "0%"
       : isMapOpen
-        ? "60%"
-        : "0%",
+      ? "60%"
+      : "0%",
     opacity: isSmallScreen ? (isMapView ? 1 : 0) : isMapOpen ? 1 : 0,
     config: config.gentle,
   });
@@ -119,26 +124,11 @@ export default function ExplorePage() {
         ? "0%"
         : "100%"
       : isMapOpen
-        ? "40%"
-        : "100%",
+      ? "40%"
+      : "100%",
     opacity: isSmallScreen ? (isMapView ? 0 : 1) : 1,
     config: config.gentle,
   });
-
-  if (!updates) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-screen bg-gray-100 dark:bg-gray-900">
-        <ProgressSpinner className="h-12 w-12 text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 mt-4">
-          Loading updates...
-        </p>
-      </div>
-    );
-  } else {
-    if (updates.length === 0) {
-      console.log("No updates found");
-    }
-  }
 
   const filteredUpdates = updates.filter(
     (update) =>
@@ -153,7 +143,18 @@ export default function ExplorePage() {
       setIsMapOpen(!isMapOpen);
     }
   };
-
+   
+  const panToQuery = (query: string): void => {
+    if (mapInstance.current) {
+      mapInstance.current.flyTo([26.8467, 80.9462], 14, {
+        animate: true,
+        duration: 1.5, // Duration of the animation in seconds
+      });
+      console.log("Panned to user location with animation");
+    } else {
+      console.log("Map instance not available", mapInstance.current);
+    }
+  };
   return (
     <div>
       <TravelMinimalBackground />
@@ -195,14 +196,15 @@ export default function ExplorePage() {
 
                       <div className="flex justify-between items-center">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild></DropdownMenuTrigger>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="dark:bg-gray-600 dark:text-gray-300"
-                          >
-                            <Filter className="mr-2 h-4 w-4" /> Filters
-                          </Button>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="dark:bg-gray-600 dark:text-gray-300"
+                            >
+                              <Filter className="mr-2 h-4 w-4" /> Filters
+                            </Button>
+                          </DropdownMenuTrigger>
 
                           <DropdownMenuContent className="dark:bg-gray-700 dark:text-gray-300">
                             <DropdownMenuItem
@@ -230,16 +232,26 @@ export default function ExplorePage() {
                               variant="outline"
                               size="sm"
                               onClick={() => setIsLive(!isLive)}
-                              className={`${isLive ? "bg-green-500 text-white" : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"}`}
+                              className={`${
+                                isLive
+                                  ? "bg-green-500 text-white"
+                                  : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                              }`}
                             >
                               <Zap
-                                className={`h-4 w-4 ${isLive ? "text-white" : "text-gray-700 dark:text-gray-300"}`}
+                                className={`h-4 w-4 ${
+                                  isLive
+                                    ? "text-white"
+                                    : "text-gray-700 dark:text-gray-300"
+                                }`}
                               />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent className="dark:bg-gray-700 dark:text-gray-300">
                             <p>
-                              {isLive ? "Live updates on" : "Live updates off"}
+                              {isLive
+                                ? "Live updates on"
+                                : "Live updates off"}
                             </p>
                           </TooltipContent>
                         </Tooltip>
@@ -266,26 +278,54 @@ export default function ExplorePage() {
                   </CardContent>
                 </Card>
 
-                <Tabs defaultValue="recent" className="flex-grow flex flex-col">
-                  <TabsList className="grid w-full grid-cols-2 mb-4 dark:bg-gray-700">
-                    <TabsTrigger value="recent" className="dark:text-gray-300">
-                      <Clock className="mr-2 h-4 w-4" />
-                      Recent
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="trending"
-                      className="dark:text-gray-300"
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-900">
+                    <ProgressSpinner className="h-12 w-12 text-gray-500 dark:text-gray-300" />
+                    <p className="text-gray-500 dark:text-gray-300 mt-4">
+                      Loading updates...
+                    </p>
+                  </div>
+                ) : (
+                  <Tabs defaultValue="recent" className="flex-grow flex flex-col">
+                    <TabsList className="grid w-full grid-cols-2 mb-4 dark:bg-gray-700">
+                      <TabsTrigger value="recent" className="dark:text-gray-300">
+                        <Clock className="mr-2 h-4 w-4" />
+                        Recent
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="trending"
+                        className="dark:text-gray-300"
+                      >
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        Trending
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent
+                      value="recent"
+                      className="flex-grow overflow-y-auto"
                     >
-                      <TrendingUp className="mr-2 h-4 w-4" />
-                      Trending
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent
-                    value="recent"
-                    className="flex-grow overflow-y-auto"
-                  >
-                    {filteredUpdates ? (
-                      filteredUpdates.map((update) => (
+                      {filteredUpdates ? (
+                        filteredUpdates.map((update) => (
+                          <UpdateCard
+                            key={update.id}
+                            update={update}
+                            setActiveUpdate={setActiveUpdate}
+                            sessionId={session?.user.id}
+                            likes={Number(likes)}
+                            dislikes={Number(dislikes)}
+                            setLikes={setLikes}
+                            setDislikes={setDislikes}
+                          />
+                        ))
+                      ) : (
+                        <p>No updates found</p>
+                      )}
+                    </TabsContent>
+                    <TabsContent
+                      value="trending"
+                      className="flex-grow overflow-y-auto"
+                    >
+                      {[...filteredUpdates].map((update) => (
                         <UpdateCard
                           key={update.id}
                           update={update}
@@ -296,29 +336,10 @@ export default function ExplorePage() {
                           setLikes={setLikes}
                           setDislikes={setDislikes}
                         />
-                      ))
-                    ) : (
-                      <p>No updates found</p>
-                    )}
-                  </TabsContent>
-                  <TabsContent
-                    value="trending"
-                    className="flex-grow overflow-y-auto"
-                  >
-                    {[...filteredUpdates].map((update) => (
-                      <UpdateCard
-                        key={update.id}
-                        update={update}
-                        setActiveUpdate={setActiveUpdate}
-                        sessionId={session?.user.id}
-                        likes={Number(likes)}
-                        dislikes={Number(dislikes)}
-                        setLikes={setLikes}
-                        setDislikes={setDislikes}
-                      />
-                    ))}
-                  </TabsContent>
-                </Tabs>
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+                )}
               </div>
             </div>
           </animated.div>

@@ -21,7 +21,7 @@ export default async function WalletPage() {
     <div className="min-h-screen bg-background text-foreground">
       <main className="container mx-auto  px-4 py-8">
         <div className="space-y-8 pt-10">
-          <WalletBalance trevcoins={user?.trevCoins} />
+          <WalletBalance trevcoins={user?.trevCoins ?? 0} />
           <div className=" relative grid grid-cols-1 lg:grid-cols-2 gap-8">
             <TransactionHistory transactions={user?.transactions.map(transaction => ({
               ...transaction,
