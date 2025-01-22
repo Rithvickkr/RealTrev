@@ -8,6 +8,8 @@ import { useRecoilState } from "recoil";
 import { darkModeState } from "@/recoil/darkmodeatom";
 import { Button } from "@/components/ui/button";
 
+import { mapQueryState } from "@/recoil/mapTriggeratom";
+
 interface Update {
   id: number;
   coordinates: { coordinates: [number, number] };
@@ -22,7 +24,7 @@ L.Icon.Default.prototype.options.iconRetinaUrl =
 L.Icon.Default.prototype.options.shadowUrl =
   "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png";
 
-const LiveMap = (udpatelocation: any) => {
+const LiveMap = () => {
   const [userLocation, setUserLocation] = useState<[number, number]>([
     26.8467, 80.9462,
   ]); // Default to Lucknow
@@ -33,6 +35,7 @@ const LiveMap = (udpatelocation: any) => {
   // const mapRef = useRef(null);
   const mapInstance = useRef<L.Map | null>(null);
   const [darkMode] = useRecoilState(darkModeState);
+  const [mapQuery,setmapQuery] = useRecoilState(mapQueryState);
 
   // Get user location
   useEffect(() => {
@@ -85,18 +88,19 @@ const LiveMap = (udpatelocation: any) => {
     }
   };
   useEffect(() => {
-    panToUserLocation();
-  }, [userLocation]);
+    if (mapQuery.trigger) {
+      console.log("Panning to query location:", mapQuery.location);
+      panToQuery(mapQuery.location); // Call your `panToQuery` function
+      setmapQuery({ trigger: false, location: [0, 0] }); // Reset the trigger
+    }
+  }, [mapQuery]);
 
-  const panToQuery = (query: string): void => {
+  const panToQuery = (location: [number, number]) => {
     if (mapInstance.current) {
-      mapInstance.current.flyTo([26.8467, 80.9462], 14, {
+      mapInstance.current.flyTo(location, 14, {
         animate: true,
-        duration: 1.5, // Duration of the animation in seconds
+        duration: 1.5,
       });
-      console.log("Panned to user location with animation");
-    } else {
-      console.log("Map instance not available", mapInstance.current);
     }
   };
 
@@ -159,3 +163,6 @@ const LiveMap = (udpatelocation: any) => {
 };
 
 export default LiveMap;
+function setQueryState(arg0: { trigger: boolean; location: number[] }) {
+  throw new Error("Function not implemented.");
+}

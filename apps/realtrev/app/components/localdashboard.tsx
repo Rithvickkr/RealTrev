@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { LucideMenu } from "lucide-react";
 import { ProgressSpinner } from "primereact/progressspinner";
 import TravelMinimalBackground from "./background";
-
+import { useRecoilState } from "recoil";
+import { mapQueryState } from "@/recoil/mapTriggeratom";
 type Query = {
   id: string;
   travelerId: string;
@@ -43,6 +44,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
 
   const router = useRouter();
   const isSmallScreen = useMediaQuery({ maxWidth: 768 });
+  const [mapQuery,setmapQuery] = useRecoilState(mapQueryState);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -66,7 +68,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
   useEffect(() => {
     if (userLocation?.latitude && userLocation?.longitude) {
       const fetchData = async () => {
-        setLoading(true); 
+        setLoading(true);
         try {
           const fetchedQueries = await getQuery(
             userLocation.latitude,
@@ -129,15 +131,13 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
         } catch (error) {
           console.error("Error fetching queries:", error);
         } finally {
-          setLoading(false); 
+          setLoading(false);
         }
       };
 
       fetchData();
     }
   }, [userLocation]);
-  
-  
 
   const fetchCityName = async (latitude: number, longitude: number) => {
     const API_KEY = "37da08ae92ea44f386b963337c7b28b0"; // Replace with your OpenCage API key
@@ -326,7 +326,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
             </p>
             {loading ? (
               <div className="flex justify-center items-center size-auto ">
-                   <ProgressSpinner />
+                <ProgressSpinner />
               </div>
             ) : (
               <div className="space-y-4">

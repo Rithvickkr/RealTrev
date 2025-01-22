@@ -44,6 +44,7 @@ import {
 import { useSession } from "next-auth/react";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useRecoilState } from "recoil";
+import { mapQueryState } from "@/recoil/mapTriggeratom";
 
 export default function ExplorePage() {
   const [activeUpdate, setActiveUpdate] = useState<Update | null>(null);
@@ -60,7 +61,7 @@ export default function ExplorePage() {
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const [loading, setLoading] = useState(true);
-  const mapInstance = useRef<any>(null);
+  const [mapQuery,setmapQuery] = useRecoilState(mapQueryState);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -143,18 +144,14 @@ export default function ExplorePage() {
       setIsMapOpen(!isMapOpen);
     }
   };
-   
-  const panToQuery = (query: string): void => {
-    if (mapInstance.current) {
-      mapInstance.current.flyTo([26.8467, 80.9462], 14, {
-        animate: true,
-        duration: 1.5, // Duration of the animation in seconds
-      });
-      console.log("Panned to user location with animation");
-    } else {
-      console.log("Map instance not available", mapInstance.current);
-    }
+  const handleClickquery = (queryLocation:any) => {
+    const newLocation = { coordinates: queryLocation};
+    const newlocationrreverse = { coordinates: [queryLocation[1], queryLocation[0]] }; 
+    console.log("Triggering map action with location:", newlocationrreverse.coordinates);
+    setmapQuery({ trigger: true, location: newlocationrreverse.coordinates as [number, number] });
   };
+   
+  
   return (
     <div>
       <TravelMinimalBackground />
@@ -315,6 +312,8 @@ export default function ExplorePage() {
                             dislikes={Number(dislikes)}
                             setLikes={setLikes}
                             setDislikes={setDislikes}
+                            coordinates={update.coordinates}
+                            setmapQuery={handleClickquery}
                           />
                         ))
                       ) : (
@@ -335,6 +334,8 @@ export default function ExplorePage() {
                           dislikes={Number(dislikes)}
                           setLikes={setLikes}
                           setDislikes={setDislikes}
+                          coordinates={update.coordinates}
+                          setmapQuery={handleClickquery}
                         />
                       ))}
                     </TabsContent>
@@ -377,6 +378,10 @@ interface Update {
   type: Severity;
   likes: number;
   dislikes: number;
+  coordinates: {
+    coordinates: [number, number];
+  };
+
 }
 
 function UpdateCard({
@@ -387,6 +392,8 @@ function UpdateCard({
   dislikes,
   setLikes,
   setDislikes,
+  coordinates,
+  setmapQuery,
 }: {
   update: Update;
   setActiveUpdate: React.Dispatch<React.SetStateAction<Update | null>>;
@@ -395,6 +402,8 @@ function UpdateCard({
   dislikes: Number;
   setLikes: any;
   setDislikes: any;
+  coordinates: any;
+  setmapQuery: any;
 }) {
   return (
     <Card className="mb-4 hover:shadow-lg transition-shadow duration-300 dark:bg-gray-700">
@@ -459,7 +468,7 @@ function UpdateCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveUpdate(update)}
+                  onClick={() => setmapQuery(coordinates.coordinates)}
                   className="dark:bg-gray-600 dark:text-gray-300"
                 >
                   <Eye className="mr-1 h-4 w-4" />
