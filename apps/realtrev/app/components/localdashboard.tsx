@@ -114,8 +114,8 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
                 }`,
                 traveler: query.traveler,
                 status:
-                  query.status === "PENDING"
-                    ? "Pending"
+                  query.status === "PENDING"  
+                    ? "Pending"  
                     : query.status === "ACCEPTED"
                       ? "Accepted"
                       : "Resolved",
