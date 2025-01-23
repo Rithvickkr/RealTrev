@@ -155,6 +155,13 @@ export default function Navbar() {
               <DropdownMenuLabel className="dark:text-foreground-dark">
                 My Account
               </DropdownMenuLabel>
+                <div className="px-5 py-2">
+                <p className="text-sm font-semibold">{session?.user.name}</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
+                  {session?.user.email}
+                </p>
+                </div>
+              
               <DropdownMenuSeparator className="dark:bg-border-dark" />
               <DropdownMenuItem className="dark:text-foreground-dark">
               <User className="mr-2 h-4 w-4" />
@@ -232,12 +239,12 @@ export default function Navbar() {
                       src="https://github.com/shadcn.png"
                       alt="@shadcn"
                     />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>{session?.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold">John Doe</p>
+                    <p className="font-semibold">{session?.user.name}</p>
                     <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
-                      john@example.com
+                      {session?.user.email}
                     </p>
                   </div>
                 </div>

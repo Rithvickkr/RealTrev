@@ -113,7 +113,7 @@ const LiveMap = () => {
           center={userLocation}
           zoom={13}
           className="w-full h-full"
-          whenReady={(event: any) => {
+          whenReady={(event: any) => {  // eslint-disable-line
             const map = event.target as L.Map;
             mapInstance.current = map;
           }}
