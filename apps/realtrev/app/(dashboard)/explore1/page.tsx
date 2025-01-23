@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { darkModeState } from "@/recoil/darkmodeatom";
-import { Severity } from "@prisma/client";
+
 import {
   AlertTriangle,
   ChevronLeft,
@@ -45,6 +45,11 @@ import { useSession } from "next-auth/react";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useRecoilState } from "recoil";
 import { mapQueryState } from "@/recoil/mapTriggeratom";
+ enum Severity {
+  HIGH = "HIGH",
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+}
 
 export default function ExplorePage() {
   const [activeUpdate, setActiveUpdate] = useState<Update | null>(null);
