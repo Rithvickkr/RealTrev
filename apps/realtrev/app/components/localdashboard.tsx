@@ -104,7 +104,7 @@ export default function LocalGuideDashboard({ session }: { session: any }) {
 
             setQueries(mappedQueries);
             const mappedAcceptedQueries: Query[] = fetchedAcceptedQueries.map(
-              (query) => ({
+              (query:any) => ({   
                 id: query.id,
                 travelerId: query.travelerId || "Unknown",
                 question: query.queryText || "No question provided",
