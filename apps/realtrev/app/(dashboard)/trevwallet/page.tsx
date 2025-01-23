@@ -23,7 +23,7 @@ export default async function WalletPage() {
         <div className="space-y-8 pt-10">
           <WalletBalance trevcoins={user?.trevCoins ?? 0} />
           <div className=" relative grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <TransactionHistory transactions={user?.transactions.map(transaction => ({
+            <TransactionHistory transactions={user?.transactions.map((transaction: any) => ({
               ...transaction,
               date: transaction.createdAt.toISOString()
             })) || []}/>
