@@ -1,0 +1,166 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(TRAVELLER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  answeredQueries  Query[]       @relation("Responder")
+  submittedQueries Query[]       @relation("Traveler")
+  messages         Message[]
+  updates          Updates[]
+  redemptions      Redemption[]
+  transactions     Transaction[]
+
+  trevCoins Int @default(0) // Balance of Trev Coins
+
+  Dislike Dislike[]
+
+  Like Like[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  senderId  String
+  queryId   String
+  createdAt DateTime @default(now())
+
+  query  Query   @relation(fields: [queryId], references: [id])
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  name      String
+  latitude  Float
+  longitude Float
+  queries   Query[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Query {
+  id          String      @id @default(uuid())
+  travelerId  String
+  locationId  Int
+  responderId String?
+  queryText   String
+  stars       Int?
+  status      QueryStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  severity    Severity?
+  responder   User?       @relation("Responder", fields: [responderId], references: [id])
+  traveler    User        @relation("Traveler", fields: [travelerId], references: [id])
+  location    Location    @relation(fields: [locationId], references: [id])
+  messages    Message[]
+}
+
+model Updates {
+  id          Int       @id @default(autoincrement())
+  title       String // Title of the update
+  description String // Description of the update
+  coordinates Json // Geospatial column for coordinates
+  severity    Severity? // Severity level (optional)
+  timestamp   DateTime  @default(now()) // Timestamp when the update was created
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  likes       Like[] // One-to-many relationship for likes
+  dislikes    Dislike[] // One-to-many relationship for dislikes
+
+  @@index([severity]) // Index on severity for faster lookups
+  @@index([timestamp]) // Index on timestamp for efficient sorting by time
+}
+
+model Like {
+  id       Int     @id @default(autoincrement())
+  userId   String
+  updateId Int
+  user     User    @relation(fields: [userId], references: [id])
+  update   Updates @relation(fields: [updateId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, updateId]) // Ensure a user can like an update only once
+}
+
+model Dislike {
+  id       Int     @id @default(autoincrement())
+  userId   String
+  updateId Int
+  user     User    @relation(fields: [userId], references: [id])
+  update   Updates @relation(fields: [updateId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, updateId]) // Ensure a user can dislike an update only once
+}
+
+model Reward {
+  id          String   @id @default(uuid())
+  name        String // Name of the reward
+  description String // Description of the reward
+  cost        Int // Cost in Trev Coins
+  quantity    Int // Available quantity of the reward
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  redemptions Redemption[]
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  userId      String
+  type        TransactionType
+  amount      Int // Positive for earning, negative for spending
+  description String // Reason for the transaction
+  createdAt   DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Redemption {
+  id        String   @id @default(uuid())
+  userId    String
+  rewardId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  reward Reward @relation(fields: [rewardId], references: [id])
+}
+
+enum QueryStatus {
+  PENDING
+  ACCEPTED
+  RESOLVED
+}
+
+enum Role {
+  TRAVELLER
+  GUIDE
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TransactionType {
+  EARNED
+  REDEEMED
+  BONUS
+}
