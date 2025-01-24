@@ -6,7 +6,11 @@ import { X, Loader, MapPin } from "lucide-react";
 import { addUpdate } from "../lib/actions/addupdates";
 import { useSession } from "next-auth/react";
 
-type Severity = 'LOW' | 'MEDIUM' | 'HIGH';
+enum Severity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
 
 interface FormData {
   title: string;
@@ -28,7 +32,7 @@ const useUpdateForm = () => {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
-    severity: "LOW",
+    severity: Severity.LOW,
     latitude: "",
     longitude: "",
   });
@@ -67,17 +71,17 @@ const useUpdateForm = () => {
       try {
         await addUpdate(
           formData.title,
-          formData.description,
+          formData.severity,
           parseFloat(formData.latitude),
           parseFloat(formData.longitude),
           session?.user?.id as string,
-          formData.severity as Severity
+         
         );
        
         setFormData({
           title: "",
           description: "",
-          severity: "LOW",
+          severity: Severity.LOW,
           latitude: "",
           longitude: "",
         });

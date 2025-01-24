@@ -1,7 +1,11 @@
 "use server";
-import { Severity } from "@prisma/client";
-import prisma from "@repo/db/client";
 
+import prisma from "@repo/db/client";
+ enum Severity {
+  LOW,
+  MEDIUM,
+  HIGH
+}
 export async function addUpdate(
   title: string,
   description: string,
