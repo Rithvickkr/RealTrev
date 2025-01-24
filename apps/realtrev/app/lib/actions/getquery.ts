@@ -43,7 +43,7 @@ export default async function getQuery(
   const locations = await prisma.location.findMany();
 
   // Filter locations within the radius
-  const nearbyLocations = locations.filter((location) => {
+  const nearbyLocations = locations.filter((location:any) => {
     const distance = haversineDistance(
       userLat,
       userLon,
