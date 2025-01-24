@@ -73,12 +73,15 @@ export default function ExplorePage() {
   }, [userLocation]);
 
   useEffect(() => {
+
+    if (typeof window !== "undefined") {
     const checkScreenSize = () => {
       setIsSmallScreen(window.innerWidth < 768);
     };
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
+  }
   }, []);
 
   const mapAnimation = useSpring({
