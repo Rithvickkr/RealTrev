@@ -14,6 +14,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import TravelMinimalBackground from "./background";
 import { useRecoilState } from "recoil";
 import { mapQueryState } from "@/recoil/mapTriggeratom";
+import { darkModeState } from "@/recoil/darkmodeatom";
 type Query = {
   id: string;
   travelerId: string;
@@ -26,7 +27,7 @@ type Query = {
 };
 
 export default function LocalGuideDashboard({ session }: { session: any }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode] = useRecoilState(darkModeState);
   const [queries, setQueries] = useState<Query[]>([]);
   const [resolvedQueries, setResolvedQueries] = useState<Query[]>([]);
   const [userLocation, setUserLocation] = useState<{
