@@ -57,7 +57,7 @@ export default async function getQuery(
   const nearbyQueries = await prisma.query.findMany({
     where: {
       locationId: {
-        in: nearbyLocations.map((location) => location.id),
+        in: nearbyLocations.map((location:any) => location.id),
       },
       travelerId: {
         not: userId,
@@ -70,7 +70,7 @@ export default async function getQuery(
   });
 
   // Calculate and add the distance for each query location
-  const result = nearbyQueries.map((query) => {
+  const result = nearbyQueries.map((query:any) => {
     const location = query.location;
     const distance = haversineDistance(
       userLat,
