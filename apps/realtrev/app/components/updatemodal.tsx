@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader, MapPin } from "lucide-react";
 import { addUpdate } from "../lib/actions/addupdates";
 import { useSession } from "next-auth/react";
-import { Severity } from "@prisma/client";
+
+type Severity = 'LOW' | 'MEDIUM' | 'HIGH';
 
 interface FormData {
   title: string;
