@@ -6,7 +6,6 @@ import {
   Moon,
   Sun,
   Menu,
-  X,
   Home,
   Compass,
   MessageCircle,
@@ -33,13 +32,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import changerole from "../lib/actions/changerole";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useRecoilState } from "recoil";
 import { darkModeState } from "@/recoil/darkmodeatom";
-import { useRouter } from "next/navigation";
+import { changeRoleState } from "@/recoil/changeroleatom";
 
 interface NavbarItemProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -59,14 +57,11 @@ const NavbarItem = ({ icon: Icon, text, href = "#" }: NavbarItemProps) => (
 
 export default function Navbar() {
   const { data: session } = useSession();
-
   const [scrolled, setScrolled] = useState(false);
-  const [isGuide, setIsGuide] = useState(
-    localStorage.getItem("role") === "GUIDE"
-  );
+  const [isGuide, setIsGuide] = useRecoilState<string>(changeRoleState);
   const pathname = usePathname();
   const [darkMode, setDarkMode] = useRecoilState(darkModeState);
-  const Router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -78,37 +73,33 @@ export default function Navbar() {
     const userPrefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;
-    const savedDarkMode = localStorage.getItem("darkMode") === "true";
-    setDarkMode(savedDarkMode || userPrefersDark);
+    setDarkMode(userPrefersDark);
   }, []);
 
   useEffect(() => {
     document.body.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", darkMode.toString());
   }, [darkMode]);
 
-  useEffect(() => {
-    console.log(isGuide);
-  }, [localStorage.getItem("role")]);
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  async function changeRole() {
+  const changeRole = async () => {
     if (session) {
-      const updatedUser = await changerole({
-        user: { email: session.user?.email },
-      });
-      setIsGuide(updatedUser.role === "GUIDE");
-      console.log(updatedUser.role);
-      localStorage.setItem("role", updatedUser.role);
-      console.log(isGuide);
-      window.location.reload();
+      const newRole = isGuide === "GUIDE" ? "TRAVELLER" : "GUIDE";
+      setIsGuide(newRole);
+
+      try {
+        const updatedUser = await changerole({
+          user: { email: session.user?.email },
+        });
+        setIsGuide(updatedUser.role === "GUIDE" ? "GUIDE" : "TRAVELLER");
+      } catch (error) {
+        console.error("Failed to change role", error);
+        setIsGuide(isGuide === "GUIDE" ? "GUIDE" : "TRAVELLER");
+      }
     } else {
       console.error("Session is null");
     }
-  }
+  };
 
   return (
     <nav
@@ -132,8 +123,8 @@ export default function Navbar() {
           <NavbarItem icon={Compass} text="Explore" href="/explore1" />
           <NavbarItem
             icon={MessageCircle}
-            text={!isGuide ? "Connect" : "Dashboard"}
-            href={!isGuide ? "/trevboard" : "/gdash"}
+            text={isGuide !== "GUIDE" ? "Connect" : "Dashboard"}
+            href={isGuide !== "GUIDE" ? "/trevboard" : "/gdash"}
           />
           <NavbarItem icon={User} text="Profile" />
         </div>
@@ -155,18 +146,17 @@ export default function Navbar() {
               <DropdownMenuLabel className="dark:text-foreground-dark">
                 My Account
               </DropdownMenuLabel>
-                <div className="px-5 py-2">
+              <div className="px-5 py-2">
                 <p className="text-sm font-semibold">{session?.user.name}</p>
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
                   {session?.user.email}
                 </p>
-                </div>
-              
+              </div>
               <DropdownMenuSeparator className="dark:bg-border-dark" />
               <DropdownMenuItem className="dark:text-foreground-dark">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-               </DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem className="dark:text-foreground-dark">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
@@ -174,22 +164,25 @@ export default function Navbar() {
               <DropdownMenuSeparator className="dark:bg-border-dark" />
               <DropdownMenuItem className="dark:text-foreground-dark">
                 <div className="flex items-center justify-between w-full">
-                  <span>Switch to {isGuide ? "Traveler" : "Guide"}</span>
+                  <span>Switch to {isGuide !== "GUIDE" ? "Guide" : "Traveler"}</span>
                   <Switch
-                  checked={isGuide}
-                  onCheckedChange={changeRole}
-                  className={`ml-2 ${
-                    isGuide
-                    ? "data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary-dark"
-                    : "data-[state=unchecked]:bg-secondary dark:data-[state=unchecked]:bg-secondary-dark"
-                  }`}
+                    checked={isGuide === "GUIDE"}
+                    onCheckedChange={changeRole}
+                    className={`ml-2 ${
+                      isGuide
+                        ? "data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary-dark"
+                        : "data-[state=unchecked]:bg-secondary dark:data-[state=unchecked]:bg-secondary-dark"
+                    }`}
                   />
                 </div>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="dark:bg-border-dark" />
-              <DropdownMenuItem className="dark:text-foreground-dark">
+              <DropdownMenuItem
+                className="dark:text-foreground-dark"
+                onClick={() => signOut()}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span onClick={() => signOut()}>Log out</span>
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -209,7 +202,7 @@ export default function Navbar() {
           <Button
             variant="outline"
             className="hidden md:flex items-center space-x-1 bg-background hover:bg-accent dark:bg-background-dark dark:hover:bg-accent-dark"
-            onClick={() => Router.push("/trevwallet")}
+            onClick={() => router.push("/trevwallet")}
           >
             <Gift className="w-4 h-4" />
             <span>Trev Wallet</span>
@@ -239,7 +232,9 @@ export default function Navbar() {
                       src="https://github.com/shadcn.png"
                       alt="@shadcn"
                     />
-                    <AvatarFallback>{session?.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {session?.user.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-semibold">{session?.user.name}</p>
@@ -253,7 +248,7 @@ export default function Navbar() {
                     <span className="text-sm font-medium">I am a</span>
                     <div className="space-x-2">
                       <Button
-                        variant={isGuide ? "outline" : "default"}
+                        variant={isGuide !== "GUIDE" ? "default" : "outline"}
                         size="sm"
                         onClick={changeRole}
                         className="dark:bg-background-dark dark:text-foreground-dark"
@@ -261,7 +256,7 @@ export default function Navbar() {
                         Traveler
                       </Button>
                       <Button
-                        variant={isGuide ? "default" : "outline"}
+                        variant={isGuide === "GUIDE" ? "default" : "outline"}
                         size="sm"
                         onClick={changeRole}
                         className="dark:bg-background-dark dark:text-foreground-dark"
@@ -272,15 +267,11 @@ export default function Navbar() {
                   </div>
                   <nav className="space-y-2">
                     <NavbarItem icon={Home} text="Home" />
-                    <NavbarItem
-                      icon={Compass}
-                      text="Explore"
-                      href="/querygen"
-                    />
+                    <NavbarItem icon={Compass} text="Explore" href="/querygen" />
                     <NavbarItem
                       icon={MessageCircle}
-                      text={!isGuide ? "Connect" : "Dashboard"}
-                      href={!isGuide ? "/trevboard" : "/gdash"}
+                      text={isGuide !== "GUIDE" ? "Connect" : "Dashboard"}
+                      href={isGuide !== "GUIDE" ? "/trevboard" : "/gdash"}
                     />
                     <NavbarItem icon={User} text="Profile" />
                     <NavbarItem icon={Settings} text="Settings" />
@@ -288,7 +279,7 @@ export default function Navbar() {
                   <Button
                     variant="outline"
                     className="w-full flex items-center justify-center space-x-2 dark:bg-background-dark dark:text-foreground-dark"
-                    onClick={() => Router.push("/trevwallet")}
+                    onClick={() => router.push("/trevwallet")}
                   >
                     <Gift className="w-4 h-4" />
                     <span>Trev Wallet</span>
@@ -296,9 +287,10 @@ export default function Navbar() {
                   <Button
                     variant="ghost"
                     className="w-full flex items-center justify-center space-x-2 text-destructive dark:text-destructive-dark"
+                    onClick={() => signOut()}
                   >
                     <LogOut className="w-4 h-4" />
-                    <span onClick={() => signOut()}>Log out</span>
+                    <span>Log out</span>
                   </Button>
                 </div>
               </div>
