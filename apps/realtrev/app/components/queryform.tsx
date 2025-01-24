@@ -13,6 +13,7 @@ import axios from "axios";
 import submitQuery from "../lib/actions/querysubmit";
 import { useSession } from "next-auth/react";
 import TravelMinimalBackground from "./background";
+import { Toast } from "primereact/toast";
 
 export default function EnhancedTravelerQuerySubmission() {
   const [location, setLocation] = useState("");

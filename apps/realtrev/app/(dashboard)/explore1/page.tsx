@@ -1,51 +1,25 @@
-"use client";
-
+"use client"
+import React, { useEffect, useState } from "react";
+import { animated, config, useSpring } from "@react-spring/web";
+import { useSession } from "next-auth/react";
+import { useRecoilState } from "recoil";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { animated, config, useSpring } from "@react-spring/web";
-import React, { useEffect, useRef, useState } from "react";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { darkModeState } from "@/recoil/darkmodeatom";
+import { mapQueryState } from "@/recoil/mapTriggeratom";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { AlertTriangle, ChevronLeft, ChevronRight, Clock, Eye, Filter, MapPin, Search, ThumbsDown, ThumbsUp, TrendingUp, X, Zap } from "lucide-react";
 import TravelMinimalBackground from "@/app/components/background";
 import LiveMap from "@/app/components/map";
 import handleReaction from "@/app/lib/actions/addlikeordislike";
 import { fetchUpdates } from "@/app/lib/actions/fetchupdates";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { darkModeState } from "@/recoil/darkmodeatom";
 
-import {
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Eye,
-  Filter,
-  MapPin,
-  Search,
-  ThumbsDown,
-  ThumbsUp,
-  TrendingUp,
-  X,
-  Zap,
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import { ProgressSpinner } from "primereact/progressspinner";
-import { useRecoilState } from "recoil";
-import { mapQueryState } from "@/recoil/mapTriggeratom";
- enum Severity {
+enum Severity {
   HIGH = "HIGH",
   LOW = "LOW",
   MEDIUM = "MEDIUM",
@@ -63,10 +37,9 @@ export default function ExplorePage() {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [isDarkMode, setIsDarkMode] = useRecoilState(darkModeState);
   const { data: session } = useSession();
-  const [likes, setLikes] = useState(0);
-  const [dislikes, setDislikes] = useState(0);
+  const [likesDislikes, setLikesDislikes] = useState<{ [key: number]: { likes: number, dislikes: number } }>({});
   const [loading, setLoading] = useState(true);
-  const [mapQuery,setmapQuery] = useRecoilState(mapQueryState);
+  const [mapQuery, setmapQuery] = useRecoilState(mapQueryState);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -87,15 +60,11 @@ export default function ExplorePage() {
       const updates = await fetchUpdates({ latitude, longitude });
       setUpdates(updates as Update[]);
       if (Array.isArray(updates)) {
-        setLikes(
-          updates.reduce((acc, update) => acc + Number(update.likes), Number(0))
-        );
-        setDislikes(
-          updates.reduce(
-            (acc, update) => acc + Number(update.dislikes),
-            Number(0)
-          )
-        );
+        const initialLikesDislikes = updates.reduce((acc, update) => {
+          acc[update.id] = { likes: Number(update.likes), dislikes: Number(update.dislikes) };
+          return acc;
+        }, {} as { [key: number]: { likes: number, dislikes: number } });
+        setLikesDislikes(initialLikesDislikes);
       }
       setLoading(false);
       console.log(updates);
@@ -142,6 +111,12 @@ export default function ExplorePage() {
       (activeFilter === "all" || update.type === activeFilter)
   );
 
+  const sortedTrendingUpdates = [...filteredUpdates].sort((a, b) => {
+    const likesA = likesDislikes[a.id]?.likes || 0;
+    const likesB = likesDislikes[b.id]?.likes || 0;
+    return likesB - likesA;
+  });
+
   const toggleView = () => {
     if (isSmallScreen) {
       setIsMapView(!isMapView);
@@ -149,14 +124,13 @@ export default function ExplorePage() {
       setIsMapOpen(!isMapOpen);
     }
   };
-  const handleClickquery = (queryLocation:any) => {
-    const newLocation = { coordinates: queryLocation};
-    const newlocationrreverse = { coordinates: [queryLocation[1], queryLocation[0]] }; 
+
+  const handleClickquery = (queryLocation: any) => {
+    const newlocationrreverse = { coordinates: [queryLocation[1], queryLocation[0]] };
     console.log("Triggering map action with location:", newlocationrreverse.coordinates);
     setmapQuery({ trigger: true, location: newlocationrreverse.coordinates as [number, number] });
   };
-   
-  
+
   return (
     <div>
       <TravelMinimalBackground />
@@ -192,7 +166,7 @@ export default function ExplorePage() {
                         type="text"
                         placeholder="Search locations or updates"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e:any) => setSearchQuery(e.target.value)}
                         className="flex-grow dark:bg-gray-600 dark:text-gray-300"
                       />
 
@@ -313,10 +287,9 @@ export default function ExplorePage() {
                             update={update}
                             setActiveUpdate={setActiveUpdate}
                             sessionId={session?.user.id}
-                            likes={Number(likes)}
-                            dislikes={Number(dislikes)}
-                            setLikes={setLikes}
-                            setDislikes={setDislikes}
+                            likes={likesDislikes[update.id]?.likes || 0}
+                            dislikes={likesDislikes[update.id]?.dislikes || 0}
+                            setLikesDislikes={setLikesDislikes}
                             coordinates={update.coordinates}
                             setmapQuery={handleClickquery}
                           />
@@ -329,16 +302,15 @@ export default function ExplorePage() {
                       value="trending"
                       className="flex-grow overflow-y-auto"
                     >
-                      {[...filteredUpdates].map((update) => (
+                      {sortedTrendingUpdates.map((update) => (
                         <UpdateCard
                           key={update.id}
                           update={update}
                           setActiveUpdate={setActiveUpdate}
                           sessionId={session?.user.id}
-                          likes={Number(likes)}
-                          dislikes={Number(dislikes)}
-                          setLikes={setLikes}
-                          setDislikes={setDislikes}
+                          likes={likesDislikes[update.id]?.likes || 0}
+                          dislikes={likesDislikes[update.id]?.dislikes || 0}
+                          setLikesDislikes={setLikesDislikes}
                           coordinates={update.coordinates}
                           setmapQuery={handleClickquery}
                         />
@@ -386,7 +358,6 @@ interface Update {
   coordinates: {
     coordinates: [number, number];
   };
-
 }
 
 function UpdateCard({
@@ -395,21 +366,49 @@ function UpdateCard({
   sessionId,
   likes,
   dislikes,
-  setLikes,
-  setDislikes,
+  setLikesDislikes,
   coordinates,
   setmapQuery,
 }: {
   update: Update;
   setActiveUpdate: React.Dispatch<React.SetStateAction<Update | null>>;
   sessionId: any;
-  likes: Number;
-  dislikes: Number;
-  setLikes: any;
-  setDislikes: any;
+  likes: number;
+  dislikes: number;
+  setLikesDislikes: React.Dispatch<React.SetStateAction<{ [key: number]: { likes: number, dislikes: number } }>>;
   coordinates: any;
   setmapQuery: any;
 }) {
+  const handleLike = () => {
+    handleReaction({
+      updateId: update.id,
+      userId: sessionId,
+      type: "like",
+    });
+    setLikesDislikes((prev) => ({
+      ...prev,
+      [update.id]: {
+        likes: (prev[update.id]?.likes || 0) + 1,
+        dislikes: prev[update.id]?.dislikes || 0,
+      },
+    }));
+  };
+
+  const handleDislike = () => {
+    handleReaction({
+      updateId: update.id,
+      userId: sessionId,
+      type: "dislike",
+    });
+    setLikesDislikes((prev) => ({
+      ...prev,
+      [update.id]: {
+        likes: prev[update.id]?.likes || 0,
+        dislikes: (prev[update.id]?.dislikes || 0) + 1,
+      },
+    }));
+  };
+
   return (
     <Card className="mb-4 hover:shadow-lg transition-shadow duration-300 dark:bg-gray-700">
       <CardContent className="p-4">
@@ -417,7 +416,12 @@ function UpdateCard({
           <div>
             <h3 className="font-semibold dark:text-gray-300">{update.title}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {update.timestamp.toString()}
+                <span className="block text-s text-gray-400 dark:text-gray-500">
+                {new Date(update.timestamp).toLocaleString()}
+                </span>
+                <span className={`block text-xs font-semibold ${update.type === "HIGH" ? "text-red-500" : update.type === "MEDIUM" ? "text-yellow-500" : "text-green-500"}`}>
+                {update?.type}
+                </span>
             </p>
           </div>
           <Badge
@@ -438,14 +442,7 @@ function UpdateCard({
               variant="ghost"
               size="sm"
               className="dark:text-gray-300"
-              onClick={() => {
-                handleReaction({
-                  updateId: update.id,
-                  userId: sessionId,
-                  type: "like",
-                });
-                setLikes(Number(likes) + 1);
-              }}
+              onClick={handleLike}
             >
               <ThumbsUp className="mr-1 h-4 w-4" />
               {likes.toString()}
@@ -454,14 +451,7 @@ function UpdateCard({
               variant="ghost"
               size="sm"
               className="dark:text-gray-300"
-              onClick={() => {
-                handleReaction({
-                  updateId: update.id,
-                  userId: sessionId,
-                  type: "dislike",
-                });
-                setDislikes(Number(dislikes) + 1);
-              }}
+              onClick={handleDislike}
             >
               <ThumbsDown className="mr-1 h-4 w-4" />
               {dislikes.toString()}

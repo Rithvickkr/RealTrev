@@ -362,54 +362,63 @@ export default function TravelChatPage(session: any) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          {session?.user?.role==="TRAVELLER"? <Button
-          className={`w-full ${
-            markResolved ? "bg-green-500" : "bg-purple-600 hover:bg-purple-700"
-          } text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg`}
-          onClick={() => {
-            if (id) {
+          {session?.user?.role === "TRAVELLER" ? (
+            <Button
+              className={`w-full ${
+          markResolved ? "bg-green-500" : "bg-purple-600 hover:bg-purple-700"
+              } text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg`}
+              onClick={() => {
+          if (id) {
             rateAndResolveQuery(id, rating);
             setMarkResolved(true);
-            }
-          }}
-          >
-          {markResolved ? "Resolved" : "Mark as Resolved"}
-          </Button>:null}
+          }
+              }}
+            >
+              {markResolved ? "Resolved" : "Mark as Resolved"}
+            </Button>
+          ) : (
+            <div className="text-gray-800 dark:text-gray-100">
+              <p className="font-semibold">You are guiding this chat.</p>
+              <p>Provide the best assistance to the traveler.</p>
+            </div>
+          )}
           <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-          Report Issue
+            Report Issue
           </Button>
         </motion.div>
-        <motion.div
-          className="space-y-2 mt-3 mb-3"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          <div className="grid gap-2">
-          <Label
-            className="text-xl text-gray-800 dark:text-gray-100"
-            htmlFor="rating"
+        {session?.user?.role === "TRAVELLER" && (
+          <motion.div
+            className="space-y-2 mt-3 mb-3"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Rating
-          </Label>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
+            <div className="grid gap-2">
+              <Label
+          className="text-xl text-gray-800 dark:text-gray-100"
+          htmlFor="rating"
+              >
+          Rating
+              </Label>
+              <div className="flex items-center gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               onClick={() => handleRatingChange(star)}
               className={`h-6 w-6 cursor-pointer text-gray-400 transition-colors duration-200 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 ${
-              rating >= star
-                ? "text-yellow-400 dark:text-yellow-300"
-                : ""
+                rating >= star
+            ? "text-yellow-400 dark:text-yellow-300"
+            : ""
               }`}
             >
               <StarIcon size={30} />
             </button>
-            ))}
-          </div>
-          </div>
-        </motion.div>
+          ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Notes Section */}
         <motion.div
@@ -458,12 +467,12 @@ export default function TravelChatPage(session: any) {
               >
               <h2 className="text-xl font-bold mb-2">Chat Partner</h2>
               <div className="flex items-center space-x-2">
-                <User size={18} />
-                <span>{infoQ?.traveler.name}</span>
+          <User size={18} />
+          <span>{infoQ?.traveler.name}</span>
               </div>
               <div className="flex items-center space-x-2 mt-1">
-                <MapPin size={18} />
-                <span>{infoQ?.location.name}</span>
+          <MapPin size={18} />
+          <span>{infoQ?.location.name}</span>
               </div>
               </motion.div>
               <motion.div
@@ -472,37 +481,54 @@ export default function TravelChatPage(session: any) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
               >
-              {session?.user?.role==="TRAVLLER"? <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-                Mark as Resolved
-              </Button>:null}
+              {session?.user?.role === "TRAVELLER" ? (
+          <Button
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+          onClick={() => {
+            if (id) {
+              rateAndResolveQuery(id, rating);
+              setMarkResolved(true);
+            }
+          }}
+          >
+          {markResolved ? "Resolved" : "Mark as Resolved"}
+          </Button>
+              ) : (
+          <div className="text-gray-800 dark:text-gray-100">
+            <p className="font-semibold">You are guiding this chat.</p>
+            <p>Provide the best assistance to the traveler.</p>
+          </div>
+              )}
               <button className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-                Report Issue
+          Report Issue
               </button>
               </motion.div>
-              <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="space-y-2"
-              >
-              <h3 className="text-lg font-semibold text-gray-800">
-                Rate your chat experience
-              </h3>
-              <div className="flex space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={24}
-                  onClick={() => setRating(star)}
-                  className={`cursor-pointer transition-colors duration-200 ${
-                  star <= rating
-                    ? "text-yellow-400"
-                    : "text-gray-300"
-                  }`}
-                />
-                ))}
-              </div>
-              </motion.div>
+              {session?.user?.role === "TRAVELLER" && (
+          <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-2"
+          >
+          <h3 className="text-lg font-semibold text-gray-800">
+            Rate your chat experience
+          </h3>
+          <div className="flex space-x-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              size={24}
+              onClick={() => setRating(star)}
+              className={`cursor-pointer transition-colors duration-200 ${
+              star <= rating
+                ? "text-yellow-400"
+                : "text-gray-300"
+              }`}
+            />
+            ))}
+          </div>
+          </motion.div>
+              )}
               <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -510,18 +536,18 @@ export default function TravelChatPage(session: any) {
               className="space-y-2"
               >
               <h3 className="text-lg font-semibold text-gray-800">
-                Provide feedback
+          Provide feedback
               </h3>
               <Textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                placeholder="Your feedback here..."
-                rows={4}
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+          placeholder="Your feedback here..."
+          rows={4}
               />
               <Button className="w-full bg-black text-white hover:bg-gray-800">
-                <Send size={18} className="mr-2" />
-                Send Feedback
+          <Send size={18} className="mr-2" />
+          Send Feedback
               </Button>
               </motion.div>
             </div>
