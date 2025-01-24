@@ -113,7 +113,7 @@ const LiveMap = () => {
           center={userLocation}
           zoom={13}
           className="w-full h-full"
-          whenReady={(event: any) => {  // eslint-disable-line
+          whenReady={(event: any) => {  // eslint-disable-line @typescript-eslint/no-explicit-any
             const map = event.target as L.Map;
             mapInstance.current = map;
           }}
@@ -122,8 +122,8 @@ const LiveMap = () => {
           <TileLayer
             url={
               darkMode
-                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             }
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           />
@@ -138,12 +138,12 @@ const LiveMap = () => {
             <Marker
               key={`${update.id}-${index}`}
               position={[
-                update.location[1] + index * 0.0001, // Slightly offset each marker
-                update.location[0] + index * 0.0001,
+          update.location[1] + index * 0.0001, // Slightly offset each marker
+          update.location[0] + index * 0.0001,
               ]}
             >
               <Popup>
-                <b>Update {index + 1}:</b> {update.description}
+          <b>Update {index + 1}:</b> {update.description}
               </Popup>
             </Marker>
           ))}
