@@ -7,7 +7,7 @@ import { Providers } from "./Providers";
 import Navbar from "./components/newnabvar";
 import Footer from "./components/footer";
 
-
+ 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
