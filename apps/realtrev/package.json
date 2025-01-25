@@ -15,7 +15,7 @@
     "@nextui-org/navbar": "^2.0.37",
     "@nextui-org/system": "^2.2.6",
     "@nextui-org/theme": "^2.2.11",
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^6.2.1",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
@@ -56,7 +56,6 @@
     "node-cron": "^3.0.3",
     "postcss": "^8.5.1",
     "primereact": "^10.8.4",
-    "prisma": "^5.20.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hot-toast": "^2.5.1",
@@ -83,6 +82,7 @@
     "@typescript-eslint/parser": "^8.21.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.6",
+    "prisma": "^6.2.1",
     "typescript": "^5"
   },
   "schema": "./db/prisma/schema.prisma"
