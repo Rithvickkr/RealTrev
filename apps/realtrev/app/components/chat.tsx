@@ -115,7 +115,7 @@ export default function TravelChatPage(session: any) {
     console.log("Connecting to WebSocket with Query ID:", queryId);
 
     // Initialize WebSocket connection
-    const socket = new WebSocket("ws://localhost:3002"); // Replace with your backend URL
+    const socket = new WebSocket("wss://my-websocket-server.rithvickkumar27.workers.dev"); // Replace with your Hono backend URL
     socketRef.current = socket;
 
     socket.onopen = () => {
