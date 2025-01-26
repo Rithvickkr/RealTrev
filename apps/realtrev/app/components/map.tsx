@@ -7,8 +7,8 @@ import { fetchUpdates } from "../lib/actions/fetchupdates";
 import { useRecoilState } from "recoil";
 import { darkModeState } from "@/recoil/darkmodeatom";
 import { Button } from "@/components/ui/button";
-
 import { mapQueryState } from "@/recoil/mapTriggeratom";
+import { GetServerSideProps } from "next";
 
 interface Update {
   id: number;
@@ -24,15 +24,18 @@ L.Icon.Default.prototype.options.iconRetinaUrl =
 L.Icon.Default.prototype.options.shadowUrl =
   "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png";
 
-const LiveMap = () => {
+const LiveMap = ({ initialUpdates = [] }: { initialUpdates: Update[] }) => {
   const [userLocation, setUserLocation] = useState<[number, number]>([
     26.8467, 80.9462,
   ]); // Default to Lucknow
   const [updates, setUpdates] = useState<
     { id: number; location: [number, number]; description: string }[]
-  >([]);
+  >(initialUpdates.map(update => ({
+    id: update.id,
+    location: update.coordinates.coordinates,
+    description: update.description,
+  })));
 
-  // const mapRef = useRef(null);
   const mapInstance = useRef<L.Map | null>(null);
   const [darkMode] = useRecoilState(darkModeState);
   const [mapQuery, setmapQuery] = useRecoilState(mapQueryState);
@@ -87,6 +90,7 @@ const LiveMap = () => {
       console.log("Map instance not available", mapInstance.current);
     }
   };
+
   useEffect(() => {
     if (mapQuery.trigger) {
       console.log("Panning to query location:", mapQuery.location);
@@ -159,7 +163,17 @@ const LiveMap = () => {
   );
 };
 
+export const getServerSideProps: GetServerSideProps = async () => {
+  const updates = (await fetchUpdates({ latitude: 26.8467, longitude: 80.9462 })) as Update[];
+  return {
+    props: {
+      initialUpdates: updates.map((update: Update) => ({
+        id: update.id,
+        location: update.coordinates.coordinates,
+        description: update.description,
+      })),
+    },
+  };
+};
+
 export default LiveMap;
-function setQueryState(arg0: { trigger: boolean; location: number[] }) {
-  throw new Error("Function not implemented.");
-}
