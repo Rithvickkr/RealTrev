@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useRouter, useParams } from "next/navigation";
+import io, { Socket } from "socket.io-client";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -63,7 +65,9 @@ export default function TravelChatPage(session: any) {
 
   const params = useParams();
   const router = useRouter();
-  const socketRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(
+    null
+  );
   const [id, setId] = useState<string | undefined>(() =>
     Array.isArray(params?.queryid) ? params.queryid[0] : params?.queryid
   );
@@ -110,43 +114,33 @@ export default function TravelChatPage(session: any) {
 
     const queryId = Array.isArray(params.queryid)
       ? params.queryid[0]
-      : params.queryid;
+      : params.queryid; 
     setId(queryId);
-    console.log("Connecting to WebSocket with Query ID:", queryId);
+    console.log("Connecting to socket with Query ID:", queryId);
 
-    // Initialize WebSocket connection
-    const socket = new WebSocket("wss://my-websocket-server.rithvickkumar27.workers.dev"); // Replace with your Hono backend URL
+    // Initialize socket connection
+    const socket = io("ws://my-websocket-server.rithvickkumar27.workers.dev"); // Replace with your Cloudflare WebSocket URL
     socketRef.current = socket;
 
-    socket.onopen = () => {
-      console.log("WebSocket connection established");
-      socket.send(JSON.stringify({ type: "joinRoom", queryid: queryId }));
-      console.log("Joined room with Query ID:", queryId);
-    };
+    socket.emit("joinRoom", { queryid: queryId });
+    console.log("Joined room with Query ID:", queryId);
 
-    socket.onmessage = (event) => {
-      const payload = JSON.parse(event.data);
-      if (payload.type === "receiveMessage") {
+    // Listen for incoming messages
+    socket.on(
+      "receiveMessage",
+      (payload: { message: string; senderId: string }) => {
         console.log("Message received:", payload);
         setMessages((prev) => [
           ...prev,
           { ...payload, id: prev.length + 1, time: new Date() },
         ]);
       }
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+    );
 
     // Cleanup on component unmount
     return () => {
-      console.log("Closing WebSocket connection...");
-      socket.close();
+      console.log("Disconnecting from socket...");
+      socket.disconnect();
     };
   }, [params?.queryid, router]);
 
@@ -166,12 +160,12 @@ export default function TravelChatPage(session: any) {
       const socket = socketRef.current;
       if (socket) {
         try {
-          socket.send(JSON.stringify({ type: "sendMessage", ...payload }));
+          socket.emit("sendMessage", payload);
         } catch (err) {
           console.error("Error sending message:", err);
         }
       } else {
-        console.error("WebSocket is not initialized!");
+        console.error("Socket is not initialized!");
       }
 
       setInput(""); // Clear input field
