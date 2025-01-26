@@ -8,7 +8,8 @@
     "build": {
       "dependsOn": ["^build", "^prisma:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**","prisma/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**","prisma/**"],
+      "env": ["DATABASE_URL", "NEXTAUTH_SECRET", "DATABASE_URL_UNPOOLED"]
     },
     "lint": {
       "dependsOn": ["^lint"]
