@@ -119,7 +119,7 @@ export default function TravelChatPage(session: any) {
     console.log("Connecting to socket with Query ID:", queryId);
 
     // Initialize socket connection
-    const socket = io("ws://my-websocket-server.rithvickkumar27.workers.dev"); // Replace with your Cloudflare WebSocket URL
+    const socket = io("wss://my-websocket-server.rithvickkumar27.workers.dev"); // Replace with your Cloudflare WebSocket URL
     socketRef.current = socket;
 
     socket.emit("joinRoom", { queryid: queryId });
