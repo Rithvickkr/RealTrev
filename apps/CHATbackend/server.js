@@ -93,7 +93,7 @@ function generateUniqueId() {
   return Math.random().toString(36).substr(2, 9);
 }
 
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
