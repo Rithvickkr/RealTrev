@@ -62,7 +62,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [darkMode, setDarkMode] = useRecoilState(darkModeState);
   const router = useRouter();
-
+  
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
@@ -100,6 +100,9 @@ export default function Navbar() {
       console.error("Session is null");
     }
   };
+  if (pathname === "/signin") {
+    return null;
+  }
 
   return (
     <nav
