@@ -85,7 +85,7 @@ RealTrev is a web platform that connects travelers with locals to get real-time 
 - **Community-Driven Reports**: Locals and other travelers can share information about ongoing events, safety concerns, or local insights.
 - **User Authentication**: Secure login and account management for users.
 - **Interactive Map**: Visual representation of location-based reports.
-- **Comment & Vote System**: Users can comment on and upvote/downvote reports to ensure accuracy.
+- **Vote System**: Users can upvote/downvote reports to ensure accuracy.
 - **Notification System**: Users can subscribe to updates for specific locations.
 
 ## Tech Stack
@@ -148,7 +148,7 @@ Contributions are welcome! If you'd like to contribute:
 This project is licensed under the MIT License.
 
 ## Contact
-For any inquiries or support, reach out to **Rithvick Kumar** via [LinkedIn](https://www.linkedin.com/in/yourprofile) or email at `12216061@NITKKR.AC.IN`.
+For any inquiries or support, reach out to **Rithvick Kumar** via [LinkedIn](https://www.linkedin.com/in/rithvickkr027) or email at `12216061@NITKKR.AC.IN`.
 
 ---
 

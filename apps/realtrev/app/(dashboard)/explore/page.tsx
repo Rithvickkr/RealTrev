@@ -30,7 +30,7 @@ const LocalExpertCard = ({
   rating,
   image,
 }: LocalExpertCardProps) => (
-  <Card className="w-64 shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:scale-105 rounded-xl overflow-hidden dark:bg-gray-900 dark:text-gray-200">
+  <Card className="w-64 shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:scale-105 rounded-xl overflow-hidden dark:bg-gray-800 dark:text-gray-100">
     <CardContent className="p-4">
       <div className="relative w-full h-40 mb-4">
         <Image
@@ -68,8 +68,8 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard = ({ text, author }: TestimonialCardProps) => (
-  <Card className="w-64 shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-105 rounded-xl overflow-hidden dark:bg-gray-900 dark:text-gray-200">
-    <CardContent className="p-4 bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900">
+  <Card className="w-64 shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-105 rounded-xl overflow-hidden dark:bg-gray-800 dark:text-gray-100">
+    <CardContent className="p-4 bg-gradient-to-br from-white to-blue-50 dark:from-gray-700 dark:to-gray-800">
       <p className="italic text-sm mb-2">"{text}"</p>
       <p className="text-right text-sm font-semibold">- {author}</p>
     </CardContent>
@@ -107,20 +107,20 @@ export default function Component() {
             objectFit="cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
         </div>
         <div className="relative z-10 text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-pulse drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-pulse drop-shadow-lg dark:text-white">
             Stay Connected to the Real World, Wherever You Go!
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto dark:text-gray-300">
             Real-time travel updates, personalized advice, and tips directly
             from locals.
           </p>
           <Button
             size="lg"
             onClick={() => Router.push("/querygen")}
-            className="rounded-full text-lg px-8 py-6 bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:scale-105 shadow-xl"
+            className="rounded-full text-lg px-8 py-6 bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:scale-105 shadow-xl dark:bg-primary-dark dark:hover:bg-primary-dark/90"
           >
             Connect with Locals Now
           </Button>
@@ -128,14 +128,14 @@ export default function Component() {
       </section>
 
       {/* Search Bar and Filters */}
-      <section className="relative z-10 py-16 bg-blue-100 bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70">
+      <section className="relative z-10 py-16 bg-blue-100 bg-opacity-70 dark:bg-gray-700 dark:bg-opacity-70">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
               <Input
                 type="text"
                 placeholder="Search your destination..."
-                className="w-full pl-10 pr-4 py-3 rounded-full text-lg shadow-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                className="w-full pl-10 pr-4 py-3 rounded-full text-lg shadow-lg focus:ring-2 focus:ring-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
               <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary animate-bounce" />
@@ -198,6 +198,18 @@ export default function Component() {
               text="The real-time updates saved me from a potential travel disaster. Highly recommended!"
               author="Lisa M."
             />
+            <TestimonialCard
+              text="Exploring new places was a breeze with RealTrev's guidance."
+              author="John D."
+            />
+            <TestimonialCard
+              text="The local tips were spot on and made my trip unforgettable."
+              author="Emily K."
+            />
+            <TestimonialCard
+              text="I discovered hidden gems thanks to the local experts on RealTrev."
+              author="Michael B."
+            />
           </div>
         </div>
       </section>
@@ -222,17 +234,17 @@ export default function Component() {
               <h3 className="font-semibold mb-2 dark:text-gray-200">
                 Progress to Next Reward
               </h3>
-              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-4 overflow-hidden">
+              <div className="bg-gray-200 dark:bg-gray-500 rounded-full h-4 overflow-hidden">
                 <div
                   className="bg-primary h-full transition-all duration-500"
                   style={{ width: "60%" }}
                 />
               </div>
-              <p className="text-sm mt-2 dark:text-gray-300">
+              <p className="text-sm mt-2 dark:text-gray-400">
                 150 coins to go for your next reward!
               </p>
             </div>
-            <Button className="w-full hover:scale-105 transition">
+            <Button className="w-full hover:scale-105 transition dark:bg-primary-dark dark:text-white">
               Browse Rewards
             </Button>
           </div>
