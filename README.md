@@ -1,82 +1,154 @@
-# Turborepo starter
+# RealTrev
 
-This is an official starter Turborepo.
+RealTrev is a web platform that connects travelers with locals to get real-time updates about destinations they plan to visit. It helps users stay informed about the latest conditions, events, and safety concerns in various locations through crowd-sourced reports.
 
-## Using this example
+## Features
+- **Real-Time Updates**: Travelers can receive live updates about places they plan to visit.
+- **Community-Driven Reports**: Locals and other travelers can share information about ongoing events, safety concerns, or local insights.
+- **User Authentication**: Secure login and account management for users.
+- **Interactive Map**: Visual representation of location-based reports.
+- **Comment & Vote System**: Users can comment on and upvote/downvote reports to ensure accuracy.
+- **Notification System**: Users can subscribe to updates for specific locations.
 
-Run the following command:
+## Tech Stack
+- **Frontend**: Next.js, Tailwind CSS, ShadCN (Radix UI)
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL (with Prisma ORM)
+- **Authentication**: NextAuth.js
+- **Hosting & Deployment**: Render.com
 
-```sh
-npx create-turbo@latest
-```
+## Installation
 
-## What's inside?
+### Prerequisites
+Ensure you have the following installed:
+- Node.js (v18+ recommended)
+- PostgreSQL (for database setup)
 
-This Turborepo includes the following packages/apps:
+### Steps to Set Up Locally
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/realtrev.git
+   cd realtrev
+   ```
 
-### Apps and Packages
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+3. Set up the environment variables:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   DATABASE_URL=your_postgresql_database_url
+   NEXTAUTH_SECRET=your_nextauth_secret
+   NEXTAUTH_URL=http://localhost:3000
+   ```
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+4. Apply database migrations:
+   ```sh
+   npx prisma migrate dev --name init
+   ```
 
-### Utilities
+5. Start the development server:
+   ```sh
+   npm run dev
+   ```
 
-This Turborepo has some additional tools already setup for you:
+6. Open the application in your browser:
+   ```
+   http://localhost:3000
+   ```
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Contributing
+Contributions are welcome! If you'd like to contribute:
+1. Fork the repository.
+2. Create a new branch (`feature/your-feature-name`).
+3. Commit your changes and push to your fork.
+4. Open a pull request.
 
-### Build
+## License
+This project is licensed under the MIT License.
 
-To build all apps and packages, run the following command:
+## Contact
+For any inquiries or support, reach out to **Rithvick Kumar** via [LinkedIn](https://www.linkedin.com/in/yourprofile) or email at `12216061@NITKKR.AC.IN`.
 
-```
-cd my-turborepo
-pnpm build
-```
+---
 
-### Develop
+Feel free to modify any sections as needed. 🚀
 
-To develop all apps and packages, run the following command:
+# RealTrev
 
-```
-cd my-turborepo
-pnpm dev
-```
+RealTrev is a web platform that connects travelers with locals to get real-time updates about destinations they plan to visit. It helps users stay informed about the latest conditions, events, and safety concerns in various locations through crowd-sourced reports.
 
-### Remote Caching
+## Features
+- **Real-Time Updates**: Travelers can receive live updates about places they plan to visit.
+- **Community-Driven Reports**: Locals and other travelers can share information about ongoing events, safety concerns, or local insights.
+- **User Authentication**: Secure login and account management for users.
+- **Interactive Map**: Visual representation of location-based reports.
+- **Comment & Vote System**: Users can comment on and upvote/downvote reports to ensure accuracy.
+- **Notification System**: Users can subscribe to updates for specific locations.
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Tech Stack
+- **Frontend**: Next.js, Tailwind CSS, ShadCN (Radix UI)
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL (with Prisma ORM)
+- **Authentication**: NextAuth.js
+- **Hosting & Deployment**: Render.com
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+## Installation
 
-```
-cd my-turborepo
-npx turbo login
-```
+### Prerequisites
+Ensure you have the following installed:
+- Node.js (v18+ recommended)
+- PostgreSQL (for database setup)
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Steps to Set Up Locally
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/realtrev.git
+   cd realtrev
+   ```
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
 
-```
-npx turbo link
-```
+3. Set up the environment variables:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   DATABASE_URL=your_postgresql_database_url
+   NEXTAUTH_SECRET=your_nextauth_secret
+   NEXTAUTH_URL=http://localhost:3000
+   ```
 
-## Useful Links
+4. Apply database migrations:
+   ```sh
+   npx prisma migrate dev --name init
+   ```
 
-Learn more about the power of Turborepo:
+5. Start the development server:
+   ```sh
+   npm run dev
+   ```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
-# RealTrevv
+6. Open the application in your browser:
+   ```
+   http://localhost:3000
+   ```
+
+## Contributing
+Contributions are welcome! If you'd like to contribute:
+1. Fork the repository.
+2. Create a new branch (`feature/your-feature-name`).
+3. Commit your changes and push to your fork.
+4. Open a pull request.
+
+## License
+This project is licensed under the MIT License.
+
+## Contact
+For any inquiries or support, reach out to **Rithvick Kumar** via [LinkedIn](https://www.linkedin.com/in/yourprofile) or email at `12216061@NITKKR.AC.IN`.
+
+---
+
